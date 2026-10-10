@@ -188,6 +188,27 @@ export async function POST(request: Request) {
       const ownerField = ownerFields[table];
       if (ownerField && rows.some((row: any) => row[ownerField] && row[ownerField] !== userId)) return NextResponse.json({ error: 'Cannot write another user’s data.' }, { status: 403 });
       if (ownerField) rows.forEach((row: any) => row[ownerField] = userId);
+      if (table === 'matches') {
+        for (const row of rows) {
+          if (row.user1Id !== userId && row.user2Id !== userId) return NextResponse.json({ error: 'You can only create your own matches.' }, { status: 403 });
+          if (!row.user1Id || !row.user2Id || row.user1Id === row.user2Id) return NextResponse.json({ error: 'Invalid match participants.' }, { status: 400 });
+          const pair = [row.user1Id, row.user2Id].sort();
+          row.user1Id = pair[0];
+          row.user2Id = pair[1];
+        }
+      }
+      if (table === 'conversations') {
+        for (const row of rows) {
+          const match = await prisma.match.findFirst({ where: { id: row.matchId, OR: [{ user1Id: userId }, { user2Id: userId }] } });
+          if (!match) return NextResponse.json({ error: 'Conversation must belong to one of your matches.' }, { status: 403 });
+        }
+      }
+      if (table === 'messages') {
+        for (const row of rows) {
+          const conversation = await prisma.conversation.findFirst({ where: { id: row.conversationId, match: { OR: [{ user1Id: userId }, { user2Id: userId }] } } });
+          if (!conversation) return NextResponse.json({ error: 'You cannot message in this conversation.' }, { status: 403 });
+        }
+      }
       if (action === 'upsert') {
         result = await Promise.all(rows.map(async (row: any) => {
           if (table === 'user_interests') return model.upsert({ where: { userId_interestId: { userId: row.userId, interestId: row.interestId } }, create: row, update: row });
@@ -195,7 +216,17 @@ export async function POST(request: Request) {
           if (table === 'profiles' || table === 'users') return model.upsert({ where: { id: userId }, create: row, update: row });
           return model.create({ data: row });
         }));
-      } else result = await model.createMany({ data: rows, skipDuplicates: true });
+      } else {
+        result = await Promise.all(rows.map((row: any) => model.create({ data: row })));
+      }
+      result = sanitize(table, result, userId);
+      if (input.singleMode === 'single') {
+        if (!Array.isArray(result) || result.length !== 1) return NextResponse.json({ error: 'Expected exactly one row.' }, { status: 406 });
+        result = result[0];
+      } else if (input.singleMode === 'maybeSingle') {
+        if (Array.isArray(result) && result.length > 1) return NextResponse.json({ error: 'Expected at most one row.' }, { status: 406 });
+        result = Array.isArray(result) ? result[0] ?? null : result;
+      }
     } else if (action === 'update') {
       const data = toDb(table, input.values ?? {});
       if (table === 'profiles' || table === 'users') delete data.id;
