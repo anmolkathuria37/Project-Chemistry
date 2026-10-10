@@ -173,6 +173,8 @@ export async function POST(request: Request) {
     await ensureUser(userId);
     if (table === 'interests' && action === 'select') await ensureInterestCatalog();
 
+    if (table === 'interests' && action !== 'select') return NextResponse.json({ error: 'Interest catalog is read-only.' }, { status: 403 });
+
     const model: any = (prisma as any)[modelName];
     if (!model) return NextResponse.json({ error: 'Data model unavailable.' }, { status: 500 });
     const filters = Array.isArray(input.filters) ? input.filters : [];
@@ -206,6 +208,13 @@ export async function POST(request: Request) {
       const ownerField = ownerFields[table];
       if (ownerField && rows.some((row: any) => row[ownerField] && row[ownerField] !== userId)) return NextResponse.json({ error: 'Cannot write another user’s data.' }, { status: 403 });
       if (ownerField) rows.forEach((row: any) => row[ownerField] = userId);
+      if (table === 'likes') {
+        for (const row of rows) {
+          if (!row.likedId || row.likedId === userId) return NextResponse.json({ error: 'Invalid like target.' }, { status: 400 });
+          const block = await prisma.block.findFirst({ where: { OR: [{ blockerId: userId, blockedId: row.likedId }, { blockerId: row.likedId, blockedId: userId }] } });
+          if (block) return NextResponse.json({ error: 'This interaction is unavailable.' }, { status: 403 });
+        }
+      }
       if (table === 'matches') {
         for (const row of rows) {
           if (row.user1Id !== userId && row.user2Id !== userId) return NextResponse.json({ error: 'You can only create your own matches.' }, { status: 403 });
@@ -213,6 +222,12 @@ export async function POST(request: Request) {
           const pair = [row.user1Id, row.user2Id].sort();
           row.user1Id = pair[0];
           row.user2Id = pair[1];
+          const [forwardLike, reverseLike, block] = await Promise.all([
+            prisma.like.findFirst({ where: { likerId: row.user1Id, likedId: row.user2Id } }),
+            prisma.like.findFirst({ where: { likerId: row.user2Id, likedId: row.user1Id } }),
+            prisma.block.findFirst({ where: { OR: [{ blockerId: row.user1Id, blockedId: row.user2Id }, { blockerId: row.user2Id, blockedId: row.user1Id }] } }),
+          ]);
+          if (!forwardLike || !reverseLike || block) return NextResponse.json({ error: 'A match requires mutual likes and no active block.' }, { status: 403 });
         }
       }
       if (table === 'conversations') {
