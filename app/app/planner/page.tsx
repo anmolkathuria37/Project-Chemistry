@@ -97,7 +97,7 @@ export default function PlannerPage() {
     if (error) {
       toast.error('Could not load your saved plans.');
     } else {
-      setSavedPlans((data || []) as SavedDatePlan[]);
+      setSavedPlans((data || []) as unknown as SavedDatePlan[]);
     }
     setSavedLoading(false);
   }, [user]);
