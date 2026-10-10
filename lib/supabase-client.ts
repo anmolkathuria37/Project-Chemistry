@@ -1,5 +1,3 @@
-import type { UserResource } from '@clerk/types';
-
 export type Profile = {
   id: string;
   full_name: string;
@@ -59,6 +57,7 @@ class QueryBuilder implements PromiseLike<QueryResult> {
   in(column: string, value: unknown[]) { this.filters.push({ column, operator: 'in', value }); return this; }
   not(column: string, operator: string, value: unknown) { this.filters.push({ column, operator: `not_${operator}`, value }); return this; }
   match(values: Record<string, unknown>) { Object.entries(values).forEach(([k,v]) => this.eq(k,v)); return this; }
+  or(expression: string) { this.filters.push({ column: '__or', operator: 'or', value: expression }); return this; }
   order(column: string, options?: { ascending?: boolean }) { this.orders.push({ column, ascending: options?.ascending ?? true }); return this; }
   limit(count: number) { this.maxRows = count; return this; }
   range(from: number, to: number) { this.filters.push({ column: '__range', operator: 'range', value: [from,to] }); return this; }
