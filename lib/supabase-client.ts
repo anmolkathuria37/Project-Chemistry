@@ -29,9 +29,10 @@ export type Message = { id: string; conversation_id: string; sender_id: string; 
 export type Like = { id: string; liker_id: string; liked_id: string; is_super_like: boolean; intro_note: string | null; created_at: string };
 
 type Filter = { column: string; operator: string; value: unknown };
-type QueryResult<T = any> = { data: T; error: { message: string; code?: string } | null; count?: number | null };
+type Row = Record<string, any>;
+type QueryResult<T = Row[]> = { data: T; error: { message: string; code?: string } | null; count?: number | null };
 
-class QueryBuilder implements PromiseLike<QueryResult> {
+class QueryBuilder<T = Row[]> implements PromiseLike<QueryResult<T>> {
   private action = 'select';
   private columns = '*';
   private filters: Filter[] = [];
@@ -61,10 +62,10 @@ class QueryBuilder implements PromiseLike<QueryResult> {
   order(column: string, options?: { ascending?: boolean }) { this.orders.push({ column, ascending: options?.ascending ?? true }); return this; }
   limit(count: number) { this.maxRows = count; return this; }
   range(from: number, to: number) { this.filters.push({ column: '__range', operator: 'range', value: [from,to] }); return this; }
-  single() { this.singleMode = 'single'; return this; }
-  maybeSingle() { this.singleMode = 'maybeSingle'; return this; }
+  single(): QueryBuilder<Row> { this.singleMode = 'single'; return this as unknown as QueryBuilder<Row>; }
+  maybeSingle(): QueryBuilder<Row | null> { this.singleMode = 'maybeSingle'; return this as unknown as QueryBuilder<Row | null>; }
 
-  private async execute(): Promise<QueryResult> {
+  private async execute(): Promise<QueryResult<T>> {
     try {
       const response = await fetch('/api/data', {
         method: 'POST',
@@ -76,14 +77,14 @@ class QueryBuilder implements PromiseLike<QueryResult> {
         }),
       });
       const result = await response.json();
-      if (!response.ok) return { data: null, error: { message: result.error || 'Request failed', code: result.code } };
-      return { data: result.data ?? null, error: null, count: result.count ?? null };
+      if (!response.ok) return { data: null as T, error: { message: result.error || 'Request failed', code: result.code } };
+      return { data: (result.data ?? null) as T, error: null, count: result.count ?? null };
     } catch (error) {
-      return { data: null, error: { message: error instanceof Error ? error.message : 'Network error' } };
+      return { data: null as T, error: { message: error instanceof Error ? error.message : 'Network error' } };
     }
   }
-  then<TResult1 = QueryResult, TResult2 = never>(
-    onfulfilled?: ((value: QueryResult) => TResult1 | PromiseLike<TResult1>) | null,
+  then<TResult1 = QueryResult<T>, TResult2 = never>(
+    onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
     return this.execute().then(onfulfilled ?? undefined, onrejected ?? undefined);
