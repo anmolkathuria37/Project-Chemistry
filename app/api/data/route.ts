@@ -129,9 +129,18 @@ function sanitize(table: string, rows: any, userId: string) {
     const result = fromDb(table, row);
     if ((table === 'profiles' || table === 'users') && row?.id !== userId) {
       delete result.email;
-      delete result.date_of_birth;
-      delete result.is_verified;
-      delete result.verification_badges;
+      if (row.dateOfBirth) {
+        const dob = new Date(row.dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDelta = today.getMonth() - dob.getMonth();
+        if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
+        const ageOnlyDate = new Date();
+        ageOnlyDate.setFullYear(ageOnlyDate.getFullYear() - age);
+        result.date_of_birth = ageOnlyDate.toISOString().slice(0, 10);
+      } else {
+        result.date_of_birth = null;
+      }
     }
     return result;
   };
