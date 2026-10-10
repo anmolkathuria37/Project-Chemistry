@@ -72,7 +72,7 @@ export default function SignUpPage() {
               <h1 className="font-display text-3xl font-bold text-foreground">Create your account</h1>
               <p className="text-muted-foreground mt-2">Meet people who get you. Make the first move.</p>
             </div>
-            <SignUp routing="hash" />
+            <SignUp routing="hash" fallbackRedirectUrl="/onboarding" />
             <p className="max-w-sm text-center text-xs text-muted-foreground">By creating an account, you confirm that you are at least 18 years old.</p>
           </>
         )}
