@@ -243,7 +243,7 @@ export async function POST(request: Request) {
       }
       if (table === 'messages') {
         for (const row of rows) {
-          const conversation = await prisma.conversation.findFirst({ where: { id: row.conversationId, match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } }, include: { match: true } });
+          const conversation: any = await prisma.conversation.findFirst({ where: { id: row.conversationId, match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } }, include: { match: true } });
           if (!conversation) return NextResponse.json({ error: 'You cannot message in this conversation.' }, { status: 403 });
           const otherUserId = conversation.match.user1Id === userId ? conversation.match.user2Id : conversation.match.user1Id;
           const block = await prisma.block.findFirst({ where: { OR: [{ blockerId: userId, blockedId: otherUserId }, { blockerId: otherUserId, blockedId: userId }] } });
