@@ -5,6 +5,7 @@ const nextConfig = {
   },
   images: { unoptimized: true },
   swcMinify: false,
+  experimental: { serverActions: true },
 };
 
 module.exports = nextConfig;
