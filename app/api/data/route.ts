@@ -196,7 +196,7 @@ export async function POST(request: Request) {
       }
     } else if (action === 'insert' || action === 'upsert') {
       const raw = Array.isArray(input.values) ? input.values : [input.values];
-      if (!raw.length || raw.some((item) => !item || typeof item !== 'object')) return NextResponse.json({ error: 'Invalid insert payload.' }, { status: 400 });
+      if (!raw.length || raw.some((item: any) => !item || typeof item !== 'object')) return NextResponse.json({ error: 'Invalid insert payload.' }, { status: 400 });
       const rows = raw.map((item: any) => toDb(table, item));
       if (table === 'profiles' || table === 'users') {
         if (rows.some((row: any) => row.id && row.id !== userId)) return NextResponse.json({ error: 'Cannot create another user profile.' }, { status: 403 });
