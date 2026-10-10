@@ -5,7 +5,7 @@ import { useClerk, useUser } from '@clerk/nextjs';
 import type { Profile } from '@/lib/supabase-client';
 
 type AuthContextType = {
-  user: { id: string; firstName?: string | null; lastName?: string | null; primaryEmailAddress?: { emailAddress: string } | null } | null;
+  user: { id: string; email?: string | null; firstName?: string | null; lastName?: string | null; primaryEmailAddress?: { emailAddress: string } | null } | null;
   profile: Profile | null;
   loading: boolean;
   signOut: () => Promise<void>;
@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const user = useMemo(() => clerkUser ? ({
     id: clerkUser.id,
+    email: clerkUser.primaryEmailAddress?.emailAddress ?? null,
     firstName: clerkUser.firstName,
     lastName: clerkUser.lastName,
     primaryEmailAddress: clerkUser.primaryEmailAddress ? { emailAddress: clerkUser.primaryEmailAddress.emailAddress } : null,
