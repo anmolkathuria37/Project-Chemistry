@@ -69,12 +69,17 @@ function buildWhere(table: string, filters: any[] = []) {
     if (item.operator === 'or') {
       if (typeof item.value === 'string') {
         for (const clause of item.value.split(',')) {
-          const [col, op, ...parts] = clause.split('.');
-          const raw = parts.join('.');
-          if (!col || !op) continue;
-          const key = field(table, col);
-          const val: any = raw === 'null' ? null : raw === 'true' ? true : raw === 'false' ? false : raw;
-          or.push(op === 'eq' ? { [key]: val } : op === 'neq' ? { [key]: { not: val } } : { [key]: val });
+          const andParts = clause.split('.and.');
+          const andConditions = andParts.map((part) => {
+            const [col, op, ...parts] = part.split('.');
+            const raw = parts.join('.');
+            if (!col || !op) return null;
+            const key = field(table, col);
+            const val: any = raw === 'null' ? null : raw === 'true' ? true : raw === 'false' ? false : raw;
+            return op === 'eq' ? { [key]: val } : op === 'neq' ? { [key]: { not: val } } : null;
+          }).filter(Boolean);
+          if (andConditions.length === 1) or.push(andConditions[0]);
+          else if (andConditions.length > 1) or.push({ AND: andConditions });
         }
       }
       continue;
