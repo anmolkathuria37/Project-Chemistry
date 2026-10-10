@@ -23,7 +23,7 @@ const fieldAliases: Record<string, Record<string, string>> = {
   conversations: { match_id: 'matchId', created_at: 'createdAt', last_message_at: 'lastMessageAt' },
   messages: { conversation_id: 'conversationId', sender_id: 'senderId', created_at: 'createdAt', read_at: 'readAt' },
   blocks: { blocker_id: 'blockerId', blocked_id: 'blockedId', created_at: 'createdAt' },
-  reports: { reporter_id: 'reporterId', reported_user_id: 'reportedUserId', created_at: 'createdAt' },
+  reports: { reporter_id: 'reporterId', reported_user_id: 'reportedUserId', reported_id: 'reportedUserId', reason: 'category', created_at: 'createdAt' },
   saved_date_plans: { user_id: 'userId', budget_label: 'budgetLabel', preferred_date: 'preferredDate', image_url: 'imageUrl', created_at: 'createdAt' },
 };
 
@@ -47,7 +47,8 @@ function toDb(table: string, value: any): any {
   const out: Record<string, any> = {};
   for (const [key, val] of Object.entries(value)) {
     const target = field(table, key);
-    if (key === 'date_of_birth' || key === 'preferred_date') out[target] = val ? new Date(String(val)) : null;
+    if (['date_of_birth', 'preferred_date'].includes(key)) out[target] = val ? new Date(String(val) + (String(val).length === 10 ? 'T00:00:00' : '')) : null;
+    else if (['read_at', 'last_message_at', 'created_at', 'updated_at'].includes(key)) out[target] = val ? new Date(String(val)) : null;
     else out[target] = val;
   }
   return out;
@@ -242,7 +243,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: result, error: null });
   } catch (error: any) {
     console.error('Data API error:', error);
-    const message = error?.code === 'P2002' ? 'This record already exists.' : 'The request could not be completed.';
+    const message = error?.code === 'P2002' ? 'Duplicate record already exists.' : 'The request could not be completed.';
     return NextResponse.json({ error: message, code: error?.code }, { status: error?.code === 'P2002' ? 409 : 500 });
   }
 }
