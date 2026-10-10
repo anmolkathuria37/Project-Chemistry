@@ -33,6 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
+      const pendingDob = sessionStorage.getItem('chemistry_dob');
+      if (pendingDob) {
+        const dobResponse = await fetch('/api/profile', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ date_of_birth: pendingDob }) });
+        if (dobResponse.ok) sessionStorage.removeItem('chemistry_dob');
+      }
       const response = await fetch('/api/profile', { cache: 'no-store' });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Could not load profile');
