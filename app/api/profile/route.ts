@@ -78,8 +78,13 @@ export async function PATCH(request: Request) {
       if (key === 'date_of_birth') {
         if (value === null || value === '') data[target] = null;
         else {
-          const date = new Date(String(value));
-          if (Number.isNaN(date.getTime())) return NextResponse.json({ error: 'Invalid date_of_birth' }, { status: 400 });
+          const date = new Date(String(value) + (String(value).length === 10 ? 'T00:00:00' : ''));
+          if (Number.isNaN(date.getTime()) || date > new Date()) return NextResponse.json({ error: 'Invalid date_of_birth' }, { status: 400 });
+          let age = new Date().getFullYear() - date.getFullYear();
+          const today = new Date();
+          const monthDelta = today.getMonth() - date.getMonth();
+          if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < date.getDate())) age--;
+          if (age < 18 || age > 100) return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
           data[target] = date;
         }
       } else if (key === 'photos' || key === 'verification_badges') {
