@@ -29,7 +29,7 @@ export type Message = { id: string; conversation_id: string; sender_id: string; 
 export type Like = { id: string; liker_id: string; liked_id: string; is_super_like: boolean; intro_note: string | null; created_at: string };
 
 type Filter = { column: string; operator: string; value: unknown };
-type Row = Record<string, any>;
+type Row = Profile & Record<string, any>;
 type QueryResult<T = Row[]> = { data: T; error: { message: string; code?: string } | null; count?: number | null };
 
 class QueryBuilder<T = Row[]> implements PromiseLike<QueryResult<T>> {
