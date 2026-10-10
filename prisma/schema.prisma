@@ -1,0 +1,209 @@
+// Project Chemistry's target relational schema for the MySQL + Clerk migration.
+// Clerk owns credentials and sessions. The User.id value is the Clerk user ID.
+// Do not use a client-supplied user ID for authorization; derive it from the verified Clerk session.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  // Stable identity supplied by Clerk (for example, user_...).
+  id                  String   @id @db.VarChar(191)
+  email               String?  @unique @db.VarChar(191)
+  fullName            String?  @map("full_name") @db.VarChar(191)
+  pronouns            String?  @db.VarChar(80)
+  gender              String?  @db.VarChar(80)
+  bio                 String?  @db.Text
+  dateOfBirth         DateTime? @map("date_of_birth") @db.Date
+  city                String?  @db.VarChar(120)
+  neighborhood        String?  @db.VarChar(120)
+  occupation          String?  @db.VarChar(191)
+  education           String?  @db.VarChar(191)
+  photos              Json?
+  profileCompletion   Int      @default(0) @map("profile_completion")
+  isVerified          Boolean  @default(false) @map("is_verified")
+  verificationBadges  Json?    @map("verification_badges")
+  onboardingCompleted Boolean  @default(false) @map("onboarding_completed")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  preferences         Preference?
+  interests           UserInterest[]
+  likesSent           Like[]   @relation("LikeSender")
+  likesReceived       Like[]   @relation("LikeRecipient")
+  passesGiven         Pass[]   @relation("PassSender")
+  passesReceived      Pass[]   @relation("PassRecipient")
+  matchesAsUser1      Match[]  @relation("MatchUser1")
+  matchesAsUser2      Match[]  @relation("MatchUser2")
+  messages            Message[]
+  blocksGiven         Block[]  @relation("Blocker")
+  blocksReceived      Block[]  @relation("Blocked")
+  reportsFiled        Report[] @relation("ReportReporter")
+  reportsAgainst      Report[] @relation("ReportedUser")
+  savedDatePlans      SavedDatePlan[]
+
+  @@index([city, neighborhood])
+  @@index([onboardingCompleted, profileCompletion])
+  @@map("users")
+}
+
+model Preference {
+  id          String   @id @default(cuid()) @db.VarChar(191)
+  userId      String   @unique @map("user_id") @db.VarChar(191)
+  ageMin      Int      @default(18) @map("age_min")
+  ageMax      Int      @default(99) @map("age_max")
+  distanceKm  Int      @default(25) @map("distance_km")
+  lookingFor  String   @default("exploring") @map("looking_for") @db.VarChar(80)
+  interestedIn Json?   @map("interested_in")
+  budgetMin   Int      @default(0) @map("budget_min")
+  budgetMax   Int      @default(10000) @map("budget_max")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("preferences")
+}
+
+model Interest {
+  id       String        @id @default(cuid()) @db.VarChar(191)
+  name     String        @unique @db.VarChar(120)
+  category String        @db.VarChar(120)
+  icon     String?      @db.VarChar(80)
+  users    UserInterest[]
+
+  @@index([category])
+  @@map("interests")
+}
+
+model UserInterest {
+  userId     String   @map("user_id") @db.VarChar(191)
+  interestId String   @map("interest_id") @db.VarChar(191)
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interest   Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+
+  @@id([userId, interestId])
+  @@index([interestId])
+  @@map("user_interests")
+}
+
+model Like {
+  id          String   @id @default(cuid()) @db.VarChar(191)
+  likerId     String   @map("liker_id") @db.VarChar(191)
+  likedId     String   @map("liked_id") @db.VarChar(191)
+  isSuperLike Boolean  @default(false) @map("is_super_like")
+  introNote   String?  @map("intro_note") @db.VarChar(500)
+  createdAt   DateTime @default(now()) @map("created_at")
+  liker       User     @relation("LikeSender", fields: [likerId], references: [id], onDelete: Cascade)
+  liked       User     @relation("LikeRecipient", fields: [likedId], references: [id], onDelete: Cascade)
+
+  @@unique([likerId, likedId])
+  @@index([likedId, createdAt])
+  @@map("likes")
+}
+
+model Pass {
+  id        String   @id @default(cuid()) @db.VarChar(191)
+  passerId  String   @map("passer_id") @db.VarChar(191)
+  passedId  String   @map("passed_id") @db.VarChar(191)
+  createdAt DateTime @default(now()) @map("created_at")
+  passer    User     @relation("PassSender", fields: [passerId], references: [id], onDelete: Cascade)
+  passed    User     @relation("PassRecipient", fields: [passedId], references: [id], onDelete: Cascade)
+
+  @@unique([passerId, passedId])
+  @@index([passedId, createdAt])
+  @@map("passes")
+}
+
+model Match {
+  id        String   @id @default(cuid()) @db.VarChar(191)
+  user1Id   String   @map("user1_id") @db.VarChar(191)
+  user2Id   String   @map("user2_id") @db.VarChar(191)
+  createdAt DateTime @default(now()) @map("created_at")
+  user1     User     @relation("MatchUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2     User     @relation("MatchUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  conversation Conversation?
+
+  // Application code must canonicalize the two IDs before insert to avoid reversed duplicates.
+  @@unique([user1Id, user2Id])
+  @@index([user2Id, createdAt])
+  @@map("matches")
+}
+
+model Conversation {
+  id            String    @id @default(cuid()) @db.VarChar(191)
+  matchId       String    @unique @map("match_id") @db.VarChar(191)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  lastMessageAt DateTime? @map("last_message_at")
+  match         Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  messages      Message[]
+
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid()) @db.VarChar(191)
+  conversationId String       @map("conversation_id") @db.VarChar(191)
+  senderId       String       @map("sender_id") @db.VarChar(191)
+  content        String       @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+  readAt         DateTime?    @map("read_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId, createdAt])
+  @@map("messages")
+}
+
+model Block {
+  id        String   @id @default(cuid()) @db.VarChar(191)
+  blockerId String   @map("blocker_id") @db.VarChar(191)
+  blockedId String   @map("blocked_id") @db.VarChar(191)
+  createdAt DateTime @default(now()) @map("created_at")
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+model Report {
+  id             String   @id @default(cuid()) @db.VarChar(191)
+  reporterId     String   @map("reporter_id") @db.VarChar(191)
+  reportedUserId String?  @map("reported_user_id") @db.VarChar(191)
+  category       String   @db.VarChar(120)
+  details        String?  @db.Text
+  status         String   @default("pending") @db.VarChar(40)
+  createdAt      DateTime @default(now()) @map("created_at")
+  reporter       User     @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   User?    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([reportedUserId, createdAt])
+  @@map("reports")
+}
+
+model SavedDatePlan {
+  id           String   @id @default(cuid()) @db.VarChar(191)
+  userId       String   @map("user_id") @db.VarChar(191)
+  category     String   @db.VarChar(80)
+  title        String   @db.VarChar(191)
+  description  String   @db.Text
+  neighborhood String   @default("") @db.VarChar(191)
+  budgetLabel  String   @default("") @map("budget_label") @db.VarChar(120)
+  preferredDate DateTime? @map("preferred_date") @db.Date
+  imageUrl     String   @default("") @map("image_url") @db.VarChar(1000)
+  createdAt    DateTime @default(now()) @map("created_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("saved_date_plans")
+}
