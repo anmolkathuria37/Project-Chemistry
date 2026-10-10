@@ -162,7 +162,7 @@ export default function PlannerPage() {
         ? 'Saved plans are not configured yet. Apply the latest Supabase migration and try again.'
         : 'Could not save this plan. Please try again.');
     } else if (data) {
-      setSavedPlans((plans) => [data as SavedDatePlan, ...plans]);
+      setSavedPlans((plans) => [data as unknown as SavedDatePlan, ...plans]);
       toast.success('Date idea saved to your collection.');
     }
     setSavingId(null);
