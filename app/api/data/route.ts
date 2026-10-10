@@ -70,7 +70,7 @@ function buildWhere(table: string, filters: any[] = []) {
       if (typeof item.value === 'string') {
         for (const clause of item.value.split(',')) {
           const andParts = clause.split('.and.');
-          const andConditions = andParts.map((part) => {
+          const andConditions = andParts.map((part: string) => {
             const [col, op, ...parts] = part.split('.');
             const raw = parts.join('.');
             if (!col || !op) return null;
