@@ -146,7 +146,7 @@ export default function ChatPage() {
         .single();
 
       if (newMsg) {
-        setMessages((prev) => [...prev, newMsg as MessageType]);
+        setMessages((prev) => [...prev, newMsg as unknown as MessageType]);
         await supabase
           .from('conversations')
           .update({ last_message_at: new Date().toISOString() })
