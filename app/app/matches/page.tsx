@@ -36,7 +36,7 @@ export default function MatchesPage() {
         }
 
         const enriched: MatchWithProfile[] = [];
-        for (const m of matchesData as Match[]) {
+        for (const m of matchesData as unknown as Match[]) {
           const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
           const { data: otherProfile } = await supabase
             .from('profiles')
