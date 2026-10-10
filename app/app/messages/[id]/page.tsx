@@ -100,7 +100,7 @@ export default function ChatPage() {
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      if (msgs) setMessages(msgs as MessageType[]);
+      if (msgs) setMessages(msgs as unknown as MessageType[]);
 
       // Mark messages from other as read
       if (msgs) {
