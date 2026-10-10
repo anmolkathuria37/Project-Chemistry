@@ -118,7 +118,7 @@ function ownerScope(table: string, userId: string, action: string) {
     case 'blocks': return write ? { blockerId: userId } : { OR: [{ blockerId: userId }, { blockedId: userId }] };
     case 'matches': return { OR: [{ user1Id: userId }, { user2Id: userId }] };
     case 'conversations': return { match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } };
-    case 'messages': return { conversation: { match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } } };
+    case 'messages': return { conversation: { is: { match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } } } };
     case 'reports': return { reporterId: userId };
     case 'interests': return {};
     default: return null;
