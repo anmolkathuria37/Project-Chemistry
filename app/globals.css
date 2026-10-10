@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 33% 98%;
+    --foreground: 20 14% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 12%;
+    --primary: 348 52% 38%;
+    --primary-foreground: 40 30% 98%;
+    --secondary: 30 20% 94%;
+    --secondary-foreground: 20 14% 20%;
+    --muted: 30 15% 93%;
+    --muted-foreground: 20 8% 46%;
+    --accent: 14 60% 52%;
+    --accent-foreground: 40 30% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 40 30% 98%;
+    --border: 30 15% 88%;
+    --input: 30 15% 86%;
+    --ring: 348 52% 38%;
+    --chart-1: 348 52% 38%;
+    --chart-2: 14 60% 52%;
+    --chart-3: 173 35% 42%;
+    --chart-4: 43 74% 56%;
+    --chart-5: 27 80% 55%;
+    --radius: 0.75rem;
+
+    --warm-ivory: 42 33% 98%;
+    --soft-cream: 30 25% 95%;
+    --deep-burgundy: 348 52% 28%;
+    --muted-rose: 348 30% 55%;
+    --dark-charcoal: 20 14% 12%;
+  }
+  .dark {
+    --background: 20 14% 8%;
+    --foreground: 40 30% 95%;
+    --card: 20 14% 11%;
+    --card-foreground: 40 30% 95%;
+    --popover: 20 14% 11%;
+    --popover-foreground: 40 30% 95%;
+    --primary: 348 52% 50%;
+    --primary-foreground: 20 14% 8%;
+    --secondary: 20 10% 18%;
+    --secondary-foreground: 40 30% 90%;
+    --muted: 20 10% 18%;
+    --muted-foreground: 30 10% 60%;
+    --accent: 14 60% 55%;
+    --accent-foreground: 20 14% 8%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 40 30% 95%;
+    --border: 20 10% 20%;
+    --input: 20 10% 22%;
+    --ring: 348 52% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-warm-gradient {
+    background: linear-gradient(135deg, hsl(42 33% 98%) 0%, hsl(30 25% 95%) 50%, hsl(348 15% 94%) 100%);
+  }
+  .bg-burgundy-gradient {
+    background: linear-gradient(135deg, hsl(348 52% 28%) 0%, hsl(340 45% 22%) 100%);
+  }
+  .shadow-soft {
+    box-shadow: 0 2px 8px -2px hsl(20 14% 12% / 0.08), 0 4px 16px -4px hsl(20 14% 12% / 0.06);
+  }
+  .shadow-card {
+    box-shadow: 0 1px 3px hsl(20 14% 12% / 0.06), 0 8px 24px -8px hsl(20 14% 12% / 0.08);
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+  .animate-slide-up {
+    animation: slide-up 0.6s ease-out forwards;
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out forwards;
+  }
+  .animate-scale-in {
+    animation: scale-in 0.4s ease-out forwards;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, hsl(30 15% 93%) 25%, hsl(30 15% 96%) 50%, hsl(30 15% 93%) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
