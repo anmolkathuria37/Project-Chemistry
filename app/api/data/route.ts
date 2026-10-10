@@ -112,8 +112,8 @@ function ownerScope(table: string, userId: string, action: string) {
     case 'passes': return write ? { passerId: userId } : { OR: [{ passerId: userId }, { passedId: userId }] };
     case 'blocks': return write ? { blockerId: userId } : { OR: [{ blockerId: userId }, { blockedId: userId }] };
     case 'matches': return { OR: [{ user1Id: userId }, { user2Id: userId }] };
-    case 'conversations': return { match: { OR: [{ user1: { id: userId } }, { user2: { id: userId } }] } };
-    case 'messages': return { conversation: { match: { OR: [{ user1: { id: userId } }, { user2: { id: userId } }] } } };
+    case 'conversations': return { match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } };
+    case 'messages': return { conversation: { match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } } };
     case 'reports': return { reporterId: userId };
     case 'interests': return {};
     default: return null;
@@ -132,6 +132,22 @@ function sanitize(table: string, rows: any, userId: string) {
   };
   return Array.isArray(rows) ? rows.map(map) : rows ? map(rows) : rows;
 }
+async function ensureInterestCatalog() {
+  const categories: Record<string, string[]> = {
+    'Food & Drink': ['Coffee', 'Street Food', 'Fine Dining', 'Cooking', 'Baking', 'Wine Tasting'],
+    Entertainment: ['Movies', 'Live Music', 'Theatre', 'Comedy Shows', 'Concerts'],
+    Creative: ['Photography', 'Painting', 'Writing', 'Design', 'Reading', 'Dance', 'Singing'],
+    Outdoors: ['Hiking', 'Cycling', 'Running'],
+    Fitness: ['Yoga', 'Gym'],
+    Sports: ['Cricket', 'Football', 'Tennis'],
+    Lifestyle: ['Travel', 'Weekend Getaways', 'Exploring Cafes', 'Fashion', 'Pets', 'Plant Parenting'],
+    Culture: ['Museums', 'Art Galleries', 'History'],
+    Games: ['Board Games', 'Video Games'],
+  };
+  const seed = Object.entries(categories).flatMap(([category, names]) => names.map((name) => ({ name, category })));
+  await prisma.interest.createMany({ data: seed, skipDuplicates: true });
+}
+
 async function ensureUser(userId: string) {
   const clerkUser = await currentUser();
   const email = clerkUser?.emailAddresses?.find((item) => item.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? null;
@@ -155,6 +171,7 @@ export async function POST(request: Request) {
     const scope = ownerScope(table, userId, action);
     if (scope === null) return NextResponse.json({ error: 'Operation not allowed.' }, { status: 403 });
     await ensureUser(userId);
+    if (table === 'interests' && action === 'select') await ensureInterestCatalog();
 
     const model: any = (prisma as any)[modelName];
     if (!model) return NextResponse.json({ error: 'Data model unavailable.' }, { status: 500 });
@@ -206,7 +223,7 @@ export async function POST(request: Request) {
       }
       if (table === 'messages') {
         for (const row of rows) {
-          const conversation = await prisma.conversation.findFirst({ where: { id: row.conversationId, match: { OR: [{ user1Id: userId }, { user2Id: userId }] } } });
+          const conversation = await prisma.conversation.findFirst({ where: { id: row.conversationId, match: { is: { OR: [{ user1Id: userId }, { user2Id: userId }] } } } });
           if (!conversation) return NextResponse.json({ error: 'You cannot message in this conversation.' }, { status: 403 });
         }
       }
@@ -261,7 +278,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: result, error: null });
   } catch (error: any) {
     console.error('Data API error:', error);
-    const message = error?.code === 'P2002' ? 'Duplicate record already exists.' : 'The request could not be completed.';
+    const message = error?.code === 'P2002' ? 'duplicate record already exists.' : 'The request could not be completed.';
     return NextResponse.json({ error: message, code: error?.code }, { status: error?.code === 'P2002' ? 409 : 500 });
   }
 }
