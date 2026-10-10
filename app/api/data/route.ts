@@ -230,7 +230,25 @@ export async function POST(request: Request) {
       }
     } else if (action === 'update') {
       const data = toDb(table, input.values ?? {});
-      if (table === 'profiles' || table === 'users') delete data.id;
+      if (table === 'profiles' || table === 'users') {
+        delete data.id;
+        delete data.email;
+        delete data.isVerified;
+        delete data.verificationBadges;
+        delete data.createdAt;
+        delete data.updatedAt;
+      }
+      if (table === 'messages') {
+        const allowed = new Set(['readAt']);
+        for (const key of Object.keys(data)) if (!allowed.has(key)) delete data[key];
+      }
+      if (table === 'conversations') {
+        const allowed = new Set(['lastMessageAt']);
+        for (const key of Object.keys(data)) if (!allowed.has(key)) delete data[key];
+      }
+      if (table === 'matches') {
+        for (const key of ['user1Id', 'user2Id', 'createdAt']) delete data[key];
+      }
       if (table === 'likes') delete data.likerId;
       if (table === 'passes') delete data.passerId;
       if (table === 'blocks') delete data.blockerId;
