@@ -100,7 +100,7 @@ export default function ChatPage() {
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      if (msgs) setMessages(msgs as MessageType[]);
+      if (msgs) setMessages(msgs as unknown as MessageType[]);
 
       // Mark messages from other as read
       if (msgs) {
@@ -146,7 +146,7 @@ export default function ChatPage() {
         .single();
 
       if (newMsg) {
-        setMessages((prev) => [...prev, newMsg as MessageType]);
+        setMessages((prev) => [...prev, newMsg as unknown as MessageType]);
         await supabase
           .from('conversations')
           .update({ last_message_at: new Date().toISOString() })

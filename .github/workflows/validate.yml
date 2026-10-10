@@ -1,0 +1,38 @@
+name: Validate application
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - feat/mysql-clerk-migration-foundation
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry
+      SHADOW_DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry_shadow
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dGVzdC5jbGVyay5hY2NvdW50cy5jb20k
+      CLERK_SECRET_KEY: sk_test_placeholder
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies and refresh lockfile if needed
+        run: npm install
+      - name: Validate Prisma schema
+        run: npx prisma validate
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Type-check
+        run: npm run typecheck
+      - name: Build
+        run: npm run build

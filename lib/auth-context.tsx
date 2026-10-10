@@ -1,12 +1,11 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '@/lib/supabase-client';
+import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { useClerk, useUser } from '@clerk/nextjs';
 import type { Profile } from '@/lib/supabase-client';
-import type { User } from '@supabase/supabase-js';
 
 type AuthContextType = {
-  user: User | null;
+  user: { id: string; email?: string | null; firstName?: string | null; lastName?: string | null; primaryEmailAddress?: { emailAddress: string } | null } | null;
   profile: Profile | null;
   loading: boolean;
   signOut: () => Promise<void>;
@@ -22,67 +21,63 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const { user: clerkUser, isLoaded } = useUser();
+  const { signOut: clerkSignOut } = useClerk();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-    setProfile(data as Profile | null);
+  const refreshProfile = async () => {
+    if (!clerkUser) {
+      setProfile(null);
+      setProfileLoading(false);
+      return;
+    }
+    try {
+      const pendingDob = sessionStorage.getItem('chemistry_dob');
+      if (pendingDob) {
+        const dobResponse = await fetch('/api/profile', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ date_of_birth: pendingDob }) });
+        if (dobResponse.ok) sessionStorage.removeItem('chemistry_dob');
+      }
+      const response = await fetch('/api/profile', { cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not load profile');
+      setProfile(result.data as Profile);
+    } catch (error) {
+      console.error('Profile load failed:', error);
+      setProfile(null);
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   useEffect(() => {
-    let mounted = true;
+    if (!isLoaded) return;
+    if (!clerkUser) {
+      setProfile(null);
+      setProfileLoading(false);
+      return;
+    }
+    setProfileLoading(true);
+    void refreshProfile();
+  }, [isLoaded, clerkUser?.id]);
 
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    };
+  const user = useMemo(() => clerkUser ? ({
+    id: clerkUser.id,
+    email: clerkUser.primaryEmailAddress?.emailAddress ?? null,
+    firstName: clerkUser.firstName,
+    lastName: clerkUser.lastName,
+    primaryEmailAddress: clerkUser.primaryEmailAddress ? { emailAddress: clerkUser.primaryEmailAddress.emailAddress } : null,
+  }) : null, [clerkUser]);
 
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
-        setLoading(false);
-      })();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
+  const value: AuthContextType = {
+    user,
+    profile,
+    loading: !isLoaded || (!!clerkUser && profileLoading),
+    signOut: async () => { await clerkSignOut({ redirectUrl: '/' }); },
+    refreshProfile,
   };
 
-  const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);
