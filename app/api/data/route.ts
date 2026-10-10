@@ -277,6 +277,16 @@ export async function POST(request: Request) {
         delete data.verificationBadges;
         delete data.createdAt;
         delete data.updatedAt;
+        if (data.dateOfBirth) {
+          const dob = new Date(data.dateOfBirth as string | Date);
+          const today = new Date();
+          let age = today.getFullYear() - dob.getFullYear();
+          const monthDelta = today.getMonth() - dob.getMonth();
+          if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
+          if (Number.isNaN(dob.getTime()) || dob > today || age < 18 || age > 100) {
+            return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
+          }
+        }
       }
       if (table === 'messages') {
         const allowed = new Set(['readAt']);
