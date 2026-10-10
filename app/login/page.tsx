@@ -20,7 +20,7 @@ export default function LoginPage() {
           <h1 className="font-display text-3xl font-bold text-foreground">Welcome back</h1>
           <p className="text-muted-foreground mt-2">Sign in to continue your journey.</p>
         </div>
-        <SignIn routing="hash" />
+        <SignIn routing="hash" fallbackRedirectUrl="/app/discover" />
         <p className="text-sm text-muted-foreground">New to Chemistry? <Link className="underline text-foreground" href="/signup">Create an account</Link></p>
       </section>
     </main>
