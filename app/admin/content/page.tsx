@@ -171,8 +171,16 @@ export default function AdminContentPage() {
             <label className="grid gap-1.5 text-sm">Slug (optional)
               <input maxLength={191} className="h-11 rounded-xl border border-border bg-background px-3" value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} placeholder="cozy-coffee-date" />
             </label>
-            <label className="grid gap-1.5 text-sm">Category
-              <input maxLength={120} className="h-11 rounded-xl border border-border bg-background px-3" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="Coffee / Dinner / Adventure" />
+            <label className="grid gap-1.5 text-sm">Category *
+              <select required className="h-11 rounded-xl border border-border bg-background px-3" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
+                <option value="">Choose a date category</option>
+                <option value="coffee">Coffee Date</option>
+                <option value="dinner">Dinner & Food</option>
+                <option value="movie">Movie & Film</option>
+                <option value="live">Live Music & Events</option>
+                <option value="surprise">Surprise, Art & Adventure</option>
+              </select>
+              <span className="text-xs text-muted-foreground">Use a standard category so the published idea appears in the matching Date Planner filter.</span>
             </label>
             <label className="grid gap-1.5 text-sm">Neighborhood / location
               <input maxLength={191} className="h-11 rounded-xl border border-border bg-background px-3" value={draft.neighborhood} onChange={(e) => setDraft({ ...draft, neighborhood: e.target.value })} placeholder="Hauz Khas Village" />
