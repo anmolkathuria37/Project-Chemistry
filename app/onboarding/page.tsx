@@ -251,33 +251,50 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-warm-gradient flex flex-col">
-      {/* Header */}
-      <div className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-foreground">
-              Step {stepIndex + 1} of {STEPS.length}
-            </span>
-            <span className="text-sm text-muted-foreground capitalize">{step}</span>
+      {/* Brand and progress */}
+      <header className="border-b border-border/50 bg-card/70 backdrop-blur-xl">
+        <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-burgundy-gradient text-white shadow-soft">
+                <Heart className="h-5 w-5 fill-current" />
+              </div>
+              <div>
+                <p className="font-display text-lg font-bold leading-tight text-foreground">chemistry</p>
+                <p className="text-xs text-muted-foreground">A little closer to a real connection</p>
+              </div>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Your profile</p>
+              <p className="mt-1 text-sm font-medium text-foreground">Step {stepIndex + 1} <span className="text-muted-foreground">of {STEPS.length}</span></p>
+            </div>
           </div>
-          <Progress value={progress} className="h-1.5" />
+          <Progress value={progress} className="h-2 overflow-hidden rounded-full bg-secondary" />
+          <div className="mt-3 hidden grid-cols-5 gap-2 sm:grid">
+            {STEPS.map((item, index) => (
+              <div key={item} className="space-y-1.5">
+                <div className={`h-1 rounded-full transition-colors ${index <= stepIndex ? 'bg-primary' : 'bg-border'}`} />
+                <p className={`text-[11px] capitalize ${index === stepIndex ? 'font-semibold text-primary' : 'text-muted-foreground'}`}>{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Content */}
-      <div className="flex-1 flex items-start justify-center px-6 py-8">
-        <div className="w-full max-w-2xl">
-          <div className="bg-card rounded-3xl shadow-card border border-border/50 p-8 animate-fade-in">
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="animate-fade-in rounded-3xl border border-white/70 bg-card/95 p-5 shadow-card backdrop-blur-sm sm:p-8 md:p-10">
             {step === 'basics' && (
               <>
-                <h1 className="font-display text-3xl font-bold text-foreground mb-2">Let's start with the basics</h1>
-                <p className="text-muted-foreground mb-8">This information helps us find compatible people for you.</p>
+                <h1 className="mb-2 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">Let's start with the basics</h1>
+                <p className="mb-6 text-sm leading-6 text-muted-foreground sm:mb-8 sm:text-base">This information helps us find compatible people for you.</p>
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full name *</Label>
                     <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" className="rounded-xl" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="pronouns">Pronouns</Label>
                       <Input id="pronouns" value={pronouns} onChange={(e) => setPronouns(e.target.value)} placeholder="she/her, he/him..." className="rounded-xl" />
@@ -289,12 +306,14 @@ export default function OnboardingPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Gender *</Label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {GENDERS.map((g) => (
                         <button
                           key={g}
+                          type="button"
+                          aria-pressed={gender === g}
                           onClick={() => setGender(g)}
-                          className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                          className={`min-h-12 rounded-xl border px-4 py-3 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                             gender === g
                               ? 'border-primary bg-primary/5 text-primary'
                               : 'border-border bg-background hover:border-primary/30'
@@ -328,7 +347,7 @@ export default function OnboardingPage() {
                 <h1 className="font-display text-3xl font-bold text-foreground mb-2">Add your photos</h1>
                 <p className="text-muted-foreground mb-8">Add up to 6 photos. Your first photo will be your main profile picture.</p>
                 <div className="space-y-4">
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <Input
                       value={photoUrl}
                       onChange={(e) => setPhotoUrl(e.target.value)}
@@ -340,7 +359,7 @@ export default function OnboardingPage() {
                       <Camera className="w-4 h-4 mr-1" /> Add
                     </Button>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {photos.map((url, i) => (
                       <div key={url} className="relative group aspect-square rounded-xl overflow-hidden border border-border">
                         <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
@@ -402,8 +421,10 @@ export default function OnboardingPage() {
                       {INTENTIONS.map((intent) => (
                         <button
                           key={intent.value}
+                          type="button"
+                          aria-pressed={lookingFor === intent.value}
                           onClick={() => setLookingFor(intent.value)}
-                          className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all text-left ${
+                          className={`min-h-14 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                             lookingFor === intent.value
                               ? 'border-primary bg-primary/5 text-primary'
                               : 'border-border bg-background hover:border-primary/30'
@@ -447,7 +468,7 @@ export default function OnboardingPage() {
                 <h1 className="font-display text-3xl font-bold text-foreground mb-2">What do you love?</h1>
                 <p className="text-muted-foreground mb-2">Pick at least 3 interests. These help us find people who share your passions.</p>
                 <p className="text-xs text-muted-foreground mb-6">{selectedInterests.length}/10 selected</p>
-                <div className="space-y-5 max-h-[450px] overflow-y-auto pr-2">
+                <div className="max-h-[450px] space-y-5 overflow-y-auto pr-1 sm:pr-2">
                   {Object.entries(INTEREST_CATEGORIES).map(([category, items]) => (
                     <div key={category}>
                       <h3 className="text-sm font-semibold text-foreground mb-2">{category}</h3>
@@ -455,8 +476,10 @@ export default function OnboardingPage() {
                         {items.map((item) => (
                           <button
                             key={item}
+                            type="button"
+                            aria-pressed={selectedInterests.includes(item)}
                             onClick={() => toggleInterest(item)}
-                            className={`px-3.5 py-2 rounded-full text-sm font-medium transition-all ${
+                            className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                               selectedInterests.includes(item)
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/70'
@@ -474,7 +497,7 @@ export default function OnboardingPage() {
             )}
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/50">
+            <div className="mt-8 flex items-center justify-between gap-3 border-t border-border/50 pt-6">
               <Button
                 variant="ghost"
                 onClick={() => stepIndex > 0 && setStep(STEPS[stepIndex - 1])}
@@ -486,7 +509,7 @@ export default function OnboardingPage() {
               <Button
                 onClick={saveAndNext}
                 disabled={saving}
-                className="rounded-xl bg-burgundy-gradient hover:opacity-90"
+                className="min-w-32 rounded-xl bg-burgundy-gradient shadow-soft transition-opacity hover:opacity-90"
               >
                 {saving ? 'Saving...' : step === 'interests' ? (
                   <>Complete <Sparkles className="w-4 h-4 ml-1" /></>
