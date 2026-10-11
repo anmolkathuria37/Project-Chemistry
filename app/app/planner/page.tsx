@@ -23,7 +23,10 @@ type DateIdea = {
   neighborhood: string;
   budget: string;
   image: string;
+  categoryKey?: string;
 };
+
+type CmsContentItem = { id: string; title: string; description: string; category: string; neighborhood: string; budgetLabel: string; imageUrl: string; };
 
 type SavedDatePlan = {
   id: string;
@@ -81,6 +84,28 @@ export default function PlannerPage() {
   const [savedPlans, setSavedPlans] = useState<SavedDatePlan[]>([]);
   const [savedLoading, setSavedLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [cmsIdeas, setCmsIdeas] = useState<DateIdea[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/content?section=date-planner', { cache: 'no-store' })
+      .then(async (response) => {
+        if (!response.ok) return [];
+        const result = await response.json();
+        return Array.isArray(result.items) ? result.items as CmsContentItem[] : [];
+      })
+      .then((items) => {
+        if (!active) return;
+        const mapped = items.map((item) => {
+          const value = item.category.toLowerCase();
+          const key = value.includes('coffee') ? 'coffee' : value.includes('dinner') || value.includes('food') ? 'dinner' : value.includes('movie') || value.includes('film') ? 'movie' : value.includes('music') || value.includes('live') ? 'live' : value.includes('surprise') || value.includes('art') || value.includes('outdoor') ? 'surprise' : value;
+          return { id: 'cms-' + item.id, title: item.title, desc: item.description, neighborhood: item.neighborhood, budget: item.budgetLabel, image: item.imageUrl || (DATE_IDEAS[key]?.[0]?.image ?? DATE_IDEAS.coffee[0].image), categoryKey: key };
+        });
+        setCmsIdeas(mapped);
+      })
+      .catch(() => { /* Static ideas remain available if CMS content is unreachable. */ });
+    return () => { active = false; };
+  }, []);
 
   const loadSavedPlans = useCallback(async () => {
     if (!user) {
@@ -110,7 +135,8 @@ export default function PlannerPage() {
     const query = neighborhood.trim().toLowerCase();
     const budgetLimit = budget.trim() ? Number(budget.replace(/[^\d]/g, '')) : null;
 
-    return (DATE_IDEAS[category] || []).filter((idea) => {
+    const managedIdeas = cmsIdeas.filter((idea) => idea.categoryKey === category);
+    return [...(DATE_IDEAS[category] || []), ...managedIdeas].filter((idea) => {
       const neighborhoodMatches = !query ||
         idea.neighborhood.toLowerCase().includes(query) ||
         idea.title.toLowerCase().includes(query) ||
@@ -119,7 +145,7 @@ export default function PlannerPage() {
         maximumBudget(idea) <= budgetLimit;
       return neighborhoodMatches && budgetMatches;
     });
-  }, [category, neighborhood, budget]);
+  }, [category, neighborhood, budget, cmsIdeas]);
 
   const saveIdea = async (idea: DateIdea) => {
     if (!user) {
