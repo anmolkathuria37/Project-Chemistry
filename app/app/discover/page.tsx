@@ -107,14 +107,41 @@ export default function DiscoverPage() {
 
       const excludeIds = [...likedIds, ...passedIds, ...blockedIds, ...blockedMeIds, user.id];
 
-      // Fetch candidate profiles
-      const { data: candidates } = await supabase
+      // Apply the member's own discovery preferences before returning candidate profiles.
+      const { data: preference } = await supabase
+        .from('preferences')
+        .select('age_min, age_max, interested_in')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      const interestedGenders = Array.isArray(preference?.interested_in)
+        ? preference.interested_in.filter((value: unknown): value is string => typeof value === 'string')
+        : [];
+
+      let candidateQuery = supabase
         .from('profiles')
         .select('*')
         .neq('id', user.id)
         .eq('onboarding_completed', true)
-        .not('id', 'in', `(${excludeIds.join(',')})`)
-        .limit(20);
+        .not('id', 'in', `(${excludeIds.join(',')})`);
+
+      if (interestedGenders.length > 0) {
+        candidateQuery = candidateQuery.in('gender', interestedGenders);
+      }
+
+      if (typeof preference?.age_min === 'number' && typeof preference?.age_max === 'number') {
+        const today = new Date();
+        const oldestBirthDate = new Date(today);
+        oldestBirthDate.setFullYear(today.getFullYear() - preference.age_max - 1);
+        oldestBirthDate.setDate(oldestBirthDate.getDate() + 1);
+        const youngestBirthDate = new Date(today);
+        youngestBirthDate.setFullYear(today.getFullYear() - preference.age_min);
+        const asDate = (date: Date) => date.toISOString().slice(0, 10);
+        candidateQuery = candidateQuery
+          .gte('date_of_birth', asDate(oldestBirthDate))
+          .lte('date_of_birth', asDate(youngestBirthDate));
+      }
+
+      const { data: candidates } = await candidateQuery.limit(20);
 
       if (!candidates || candidates.length === 0) {
         setProfiles([]);
