@@ -520,7 +520,7 @@ export default function OnboardingPage() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
