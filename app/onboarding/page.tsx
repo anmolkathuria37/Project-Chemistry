@@ -53,6 +53,7 @@ export default function OnboardingPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [lookingFor, setLookingFor] = useState('exploring');
+  const [interestedIn, setInterestedIn] = useState<string[]>([]);
   const [ageMin, setAgeMin] = useState(18);
   const [ageMax, setAgeMax] = useState(45);
   const [distanceKm, setDistanceKm] = useState(25);
@@ -169,32 +170,32 @@ export default function OnboardingPage() {
         }).eq('id', user.id);
         if (error) throw error;
       } else if (step === 'preferences') {
+        if (interestedIn.length === 0) {
+          toast.error('Choose at least one gender you want to discover.');
+          setSaving(false);
+          return;
+        }
         const { data: existing } = await supabase
           .from('preferences')
           .select('id')
           .eq('user_id', user.id)
           .maybeSingle();
 
+        const preferenceValues = {
+          age_min: ageMin,
+          age_max: ageMax,
+          distance_km: distanceKm,
+          looking_for: lookingFor,
+          interested_in: interestedIn,
+          budget_min: budgetMin,
+          budget_max: budgetMax,
+        };
+
         if (existing) {
-          const { error } = await supabase.from('preferences').update({
-            age_min: ageMin,
-            age_max: ageMax,
-            distance_km: distanceKm,
-            looking_for: lookingFor,
-            budget_min: budgetMin,
-            budget_max: budgetMax,
-          }).eq('user_id', user.id);
+          const { error } = await supabase.from('preferences').update(preferenceValues).eq('user_id', user.id);
           if (error) throw error;
         } else {
-          const { error } = await supabase.from('preferences').insert({
-            user_id: user.id,
-            age_min: ageMin,
-            age_max: ageMax,
-            distance_km: distanceKm,
-            looking_for: lookingFor,
-            budget_min: budgetMin,
-            budget_max: budgetMax,
-          });
+          const { error } = await supabase.from('preferences').insert({ user_id: user.id, ...preferenceValues });
           if (error) throw error;
         }
       } else if (step === 'interests') {
@@ -429,6 +430,22 @@ export default function OnboardingPage() {
                           {intent.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Label>Show me</Label>
+                    <p className="text-xs text-muted-foreground">Discover will only show people whose gender matches your selection.</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {GENDERS.map((option) => {
+                        const selected = interestedIn.includes(option);
+                        return (
+                          <button key={option} type="button" aria-pressed={selected}
+                            onClick={() => setInterestedIn((current) => selected ? current.filter((item) => item !== option) : [...current, option])}
+                            className={`min-h-12 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${selected ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background hover:border-primary/30'}`}>
+                            {option}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
