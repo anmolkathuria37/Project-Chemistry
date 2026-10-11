@@ -23,6 +23,7 @@ type DateIdea = {
   neighborhood: string;
   budget: string;
   image: string;
+  categoryKey?: string;
 };
 
 type CmsContentItem = { id: string; title: string; description: string; category: string; neighborhood: string; budgetLabel: string; imageUrl: string; };
@@ -100,7 +101,7 @@ export default function PlannerPage() {
           const key = value.includes('coffee') ? 'coffee' : value.includes('dinner') || value.includes('food') ? 'dinner' : value.includes('movie') || value.includes('film') ? 'movie' : value.includes('music') || value.includes('live') ? 'live' : value.includes('surprise') || value.includes('art') || value.includes('outdoor') ? 'surprise' : value;
           return { id: 'cms-' + item.id, title: item.title, desc: item.description, neighborhood: item.neighborhood, budget: item.budgetLabel, image: item.imageUrl || (DATE_IDEAS[key]?.[0]?.image ?? DATE_IDEAS.coffee[0].image), categoryKey: key };
         });
-        setCmsIdeas(mapped as DateIdea[] & { categoryKey?: string }[]);
+        setCmsIdeas(mapped);
       })
       .catch(() => { /* Static ideas remain available if CMS content is unreachable. */ });
     return () => { active = false; };
@@ -134,7 +135,7 @@ export default function PlannerPage() {
     const query = neighborhood.trim().toLowerCase();
     const budgetLimit = budget.trim() ? Number(budget.replace(/[^\d]/g, '')) : null;
 
-    const managedIdeas = cmsIdeas.filter((idea) => (idea as DateIdea & { categoryKey?: string }).categoryKey === category);
+    const managedIdeas = cmsIdeas.filter((idea) => idea.categoryKey === category);
     return [...(DATE_IDEAS[category] || []), ...managedIdeas].filter((idea) => {
       const neighborhoodMatches = !query ||
         idea.neighborhood.toLowerCase().includes(query) ||
