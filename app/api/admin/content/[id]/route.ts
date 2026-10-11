@@ -1,5 +1,6 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
@@ -23,7 +24,7 @@ export async function PATCH(request: Request, context: { params: { id: string } 
     const body: unknown = await request.json();
     if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
     const input = body as Record<string, unknown>;
-    const data: Record<string, unknown> = {};
+    const data: Prisma.CmsContentUpdateInput = {};
     if (input.section !== undefined) {
       if (typeof input.section !== 'string' || !sections.has(input.section)) return NextResponse.json({ error: 'Invalid section.' }, { status: 400 });
       data.section = input.section;
