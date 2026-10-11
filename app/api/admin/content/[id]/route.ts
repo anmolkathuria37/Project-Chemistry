@@ -30,9 +30,10 @@ export async function PATCH(request: Request, context: { params: { id: string } 
       data.section = input.section;
     }
     for (const key of ['title', 'description'] as const) {
-      if (input[key] !== undefined) {
-        if (typeof input[key] !== 'string' || !input[key].trim() || input[key].length > (key === 'title' ? 191 : 10000)) return NextResponse.json({ error: key + ' is invalid.' }, { status: 400 });
-        data[key] = input[key].trim();
+      const value = input[key];
+      if (value !== undefined) {
+        if (typeof value !== 'string' || !value.trim() || value.length > (key === 'title' ? 191 : 10000)) return NextResponse.json({ error: key + ' is invalid.' }, { status: 400 });
+        data[key] = value.trim();
       }
     }
     if (input.slug !== undefined) {
@@ -40,9 +41,10 @@ export async function PATCH(request: Request, context: { params: { id: string } 
       data.slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 191);
     }
     for (const [inputKey, dbKey, max] of [['category', 'category', 120], ['neighborhood', 'neighborhood', 191], ['budgetLabel', 'budgetLabel', 120], ['imageUrl', 'imageUrl', 1000]] as const) {
-      if (input[inputKey] !== undefined) {
-        if (typeof input[inputKey] !== 'string') return NextResponse.json({ error: inputKey + ' must be text.' }, { status: 400 });
-        data[dbKey] = input[inputKey].trim().slice(0, max);
+      const value = input[inputKey];
+      if (value !== undefined) {
+        if (typeof value !== 'string') return NextResponse.json({ error: inputKey + ' must be text.' }, { status: 400 });
+        data[dbKey] = value.trim().slice(0, max);
       }
     }
     if (input.published !== undefined) {
