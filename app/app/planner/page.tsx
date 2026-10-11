@@ -97,13 +97,33 @@ export default function PlannerPage() {
       .then((items) => {
         if (!active) return;
         const mapped = items.map((item) => {
-          const value = item.category.toLowerCase();
-          const key = value.includes('coffee') ? 'coffee' : value.includes('dinner') || value.includes('food') ? 'dinner' : value.includes('movie') || value.includes('film') ? 'movie' : value.includes('music') || value.includes('live') ? 'live' : value.includes('surprise') || value.includes('art') || value.includes('outdoor') ? 'surprise' : value;
-          return { id: 'cms-' + item.id, title: item.title, desc: item.description, neighborhood: item.neighborhood, budget: item.budgetLabel, image: item.imageUrl || (DATE_IDEAS[key]?.[0]?.image ?? DATE_IDEAS.coffee[0].image), categoryKey: key };
+          const value = (item.category || '').trim().toLowerCase();
+          const key = value.includes('coffee') || value.includes('cafe') || value.includes('café')
+            ? 'coffee'
+            : value.includes('dinner') || value.includes('food') || value.includes('restaurant')
+              ? 'dinner'
+              : value.includes('movie') || value.includes('film') || value.includes('cinema')
+                ? 'movie'
+                : value.includes('music') || value.includes('live') || value.includes('concert')
+                  ? 'live'
+                  : 'surprise';
+          return {
+            id: 'cms-' + item.id,
+            title: item.title,
+            desc: item.description,
+            neighborhood: item.neighborhood || 'Explore your area',
+            budget: item.budgetLabel || 'Budget not listed',
+            image: item.imageUrl || (DATE_IDEAS[key]?.[0]?.image ?? DATE_IDEAS.coffee[0].image),
+            categoryKey: key,
+          };
         });
         setCmsIdeas(mapped);
       })
-      .catch(() => { /* Static ideas remain available if CMS content is unreachable. */ });
+      .catch((error: unknown) => {
+        // Keep the curated fallback usable, but do not hide a broken CMS connection.
+        console.error('Date Planner CMS content failed to load:', error);
+        if (active) toast.error('Some date ideas could not be loaded. Showing curated fallback ideas.');
+      });
     return () => { active = false; };
   }, []);
 
