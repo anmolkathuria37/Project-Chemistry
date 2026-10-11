@@ -90,7 +90,11 @@ export default function AdminContentPage() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Could not save content.');
-      setNotice(editingId ? 'Content updated.' : 'Content created.');
+      setNotice(
+        draft.published
+          ? (editingId ? 'Content updated and published. It is available to the website.' : 'Content published and available to the website.')
+          : (editingId ? 'Changes saved as a draft. Publish this item to make it visible on the website.' : 'Content saved as a draft. Click Publish in the content library to make it visible on the website.')
+      );
       resetForm();
       await loadItems();
     } catch (err) {
@@ -171,8 +175,16 @@ export default function AdminContentPage() {
             <label className="grid gap-1.5 text-sm">Slug (optional)
               <input maxLength={191} className="h-11 rounded-xl border border-border bg-background px-3" value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} placeholder="cozy-coffee-date" />
             </label>
-            <label className="grid gap-1.5 text-sm">Category
-              <input maxLength={120} className="h-11 rounded-xl border border-border bg-background px-3" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="Coffee / Dinner / Adventure" />
+            <label className="grid gap-1.5 text-sm">Category *
+              <select required className="h-11 rounded-xl border border-border bg-background px-3" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
+                <option value="">Choose a date category</option>
+                <option value="coffee">Coffee Date</option>
+                <option value="dinner">Dinner &amp; Food</option>
+                <option value="movie">Movie &amp; Film</option>
+                <option value="live">Live Music &amp; Events</option>
+                <option value="surprise">Surprise, Art &amp; Adventure</option>
+              </select>
+              <span className="text-xs text-muted-foreground">Use a standard category so the published idea appears in the matching Date Planner filter.</span>
             </label>
             <label className="grid gap-1.5 text-sm">Neighborhood / location
               <input maxLength={191} className="h-11 rounded-xl border border-border bg-background px-3" value={draft.neighborhood} onChange={(e) => setDraft({ ...draft, neighborhood: e.target.value })} placeholder="Hauz Khas Village" />
