@@ -56,7 +56,7 @@ export async function PATCH(request: Request, context: { params: { id: string } 
     const item = await prisma.cmsContent.update({ where: { id: context.params.id }, data });
     return NextResponse.json({ item });
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') return NextResponse.json({ error: 'Content item not found.' }, { status: 404 });
       if (error.code === 'P2002') return NextResponse.json({ error: 'That slug already exists in this section.' }, { status: 409 });
     }
@@ -71,7 +71,7 @@ export async function DELETE(_request: Request, context: { params: { id: string 
     await prisma.cmsContent.delete({ where: { id: context.params.id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') return NextResponse.json({ error: 'Content item not found.' }, { status: 404 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') return NextResponse.json({ error: 'Content item not found.' }, { status: 404 });
     console.error('Admin CMS delete failed:', error);
     return NextResponse.json({ error: 'Could not delete content.' }, { status: 500 });
   }
