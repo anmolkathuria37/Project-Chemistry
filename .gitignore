@@ -28,6 +28,9 @@ yarn-error.log*
 .env
 .env*.local
 
+# local development uploads (use persistent object storage in production)
+/public/uploads/
+
 # vercel
 .vercel
 

@@ -37,7 +37,7 @@ const INTENTIONS = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const [step, setStep] = useState<Step>('basics');
   const [saving, setSaving] = useState(false);
 
@@ -51,8 +51,9 @@ export default function OnboardingPage() {
   const [neighborhood, setNeighborhood] = useState('');
   const [bio, setBio] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [lookingFor, setLookingFor] = useState('exploring');
+  const [interestedIn, setInterestedIn] = useState<string[]>([]);
   const [ageMin, setAgeMin] = useState(18);
   const [ageMax, setAgeMax] = useState(45);
   const [distanceKm, setDistanceKm] = useState(25);
@@ -89,18 +90,33 @@ export default function OnboardingPage() {
     );
   };
 
-  const addPhoto = () => {
-    if (!photoUrl.trim()) return;
+  const uploadPhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
     if (photos.length >= 6) {
       toast.error('You can add up to 6 photos.');
       return;
     }
-    if (photos.includes(photoUrl.trim())) {
-      toast.error('That photo is already added.');
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Choose an image smaller than 5 MB.');
       return;
     }
-    setPhotos([...photos, photoUrl.trim()]);
-    setPhotoUrl('');
+
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/uploads', { method: 'POST', body: formData });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Upload failed.');
+      setPhotos((current) => current.length < 6 ? [...current, result.url] : current);
+      toast.success('Photo uploaded.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not upload photo.');
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const removePhoto = (url: string) => {
@@ -154,32 +170,32 @@ export default function OnboardingPage() {
         }).eq('id', user.id);
         if (error) throw error;
       } else if (step === 'preferences') {
+        if (interestedIn.length === 0) {
+          toast.error('Choose at least one gender you want to discover.');
+          setSaving(false);
+          return;
+        }
         const { data: existing } = await supabase
           .from('preferences')
           .select('id')
           .eq('user_id', user.id)
           .maybeSingle();
 
+        const preferenceValues = {
+          age_min: ageMin,
+          age_max: ageMax,
+          distance_km: distanceKm,
+          looking_for: lookingFor,
+          interested_in: interestedIn,
+          budget_min: budgetMin,
+          budget_max: budgetMax,
+        };
+
         if (existing) {
-          const { error } = await supabase.from('preferences').update({
-            age_min: ageMin,
-            age_max: ageMax,
-            distance_km: distanceKm,
-            looking_for: lookingFor,
-            budget_min: budgetMin,
-            budget_max: budgetMax,
-          }).eq('user_id', user.id);
+          const { error } = await supabase.from('preferences').update(preferenceValues).eq('user_id', user.id);
           if (error) throw error;
         } else {
-          const { error } = await supabase.from('preferences').insert({
-            user_id: user.id,
-            age_min: ageMin,
-            age_max: ageMax,
-            distance_km: distanceKm,
-            looking_for: lookingFor,
-            budget_min: budgetMin,
-            budget_max: budgetMax,
-          });
+          const { error } = await supabase.from('preferences').insert({ user_id: user.id, ...preferenceValues });
           if (error) throw error;
         }
       } else if (step === 'interests') {
@@ -227,7 +243,9 @@ export default function OnboardingPage() {
         if (error) throw error;
 
         toast.success('Profile complete! Welcome to Chemistry.');
-        router.push('/app/discover');
+        await refreshProfile();
+        router.replace('/app/discover');
+        router.refresh();
         return;
       }
 
@@ -347,44 +365,23 @@ export default function OnboardingPage() {
                 <h1 className="font-display text-3xl font-bold text-foreground mb-2">Add your photos</h1>
                 <p className="text-muted-foreground mb-8">Add up to 6 photos. Your first photo will be your main profile picture.</p>
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Input
-                      value={photoUrl}
-                      onChange={(e) => setPhotoUrl(e.target.value)}
-                      placeholder="Paste an image URL..."
-                      className="rounded-xl"
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPhoto())}
-                    />
-                    <Button onClick={addPhoto} className="rounded-xl px-4" disabled={photos.length >= 6}>
-                      <Camera className="w-4 h-4 mr-1" /> Add
-                    </Button>
-                  </div>
+                  <label htmlFor="profile-photo-upload" className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-background px-6 py-8 text-center transition hover:border-primary/50 hover:bg-primary/5">
+                    <Camera className="mb-3 h-8 w-8 text-primary" />
+                    <span className="font-medium">{uploadingPhoto ? 'Uploading photo…' : 'Choose a photo from your device'}</span>
+                    <span className="mt-1 text-xs text-muted-foreground">JPEG, PNG or WebP · Max 5 MB each · Up to 6 photos</span>
+                    <input id="profile-photo-upload" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={uploadPhoto} disabled={uploadingPhoto || photos.length >= 6} />
+                  </label>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {photos.map((url, i) => (
-                      <div key={url} className="relative group aspect-square rounded-xl overflow-hidden border border-border">
-                        <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-                        {i === 0 && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-primary/90 text-white text-xs py-1 text-center font-medium">
-                            Main Photo
-                          </div>
-                        )}
-                        <button
-                          onClick={() => removePhoto(url)}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          ×
-                        </button>
+                      <div key={url} className="group relative aspect-square overflow-hidden rounded-xl border border-border">
+                        <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
+                        {i === 0 && <div className="absolute bottom-0 left-0 right-0 bg-primary/90 py-1 text-center text-xs font-medium text-white">Main Photo</div>}
+                        <button type="button" aria-label={`Remove photo ${i + 1}`} onClick={() => removePhoto(url)} className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-lg text-white opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">×</button>
                       </div>
                     ))}
-                    {photos.length < 6 && (
-                      <div className="aspect-square rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
-                        <Camera className="w-8 h-8" />
-                      </div>
-                    )}
+                    {photos.length < 6 && <div className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border text-muted-foreground"><Camera className="h-8 w-8" /></div>}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Tip: Use clear, well-lit photos that show your personality. In production, you'll be able to upload directly from your device.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Choose clear, well-lit photos. Your first photo will be your main profile picture.</p>
                 </div>
               </>
             )}
@@ -433,6 +430,22 @@ export default function OnboardingPage() {
                           {intent.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Label>Show me</Label>
+                    <p className="text-xs text-muted-foreground">Discover will only show people whose gender matches your selection.</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {GENDERS.map((option) => {
+                        const selected = interestedIn.includes(option);
+                        return (
+                          <button key={option} type="button" aria-pressed={selected}
+                            onClick={() => setInterestedIn((current) => selected ? current.filter((item) => item !== option) : [...current, option])}
+                            className={`min-h-12 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${selected ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background hover:border-primary/30'}`}>
+                            {option}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
