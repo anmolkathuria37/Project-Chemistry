@@ -1,28 +1,3 @@
-// import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-
-// const isProtectedRoute = createRouteMatcher([
-//   '/onboarding(.*)',
-//   '/app(.*)',
-//   '/admin(.*)',
-// ]);
-
-// export default clerkMiddleware(async (auth, request) => {
-//   if (isProtectedRoute(request)) {
-//     await auth.protect({
-//       unauthenticatedUrl: new URL('/login', request.url).toString(),
-//     });
-//   }
-//   { debug: true }
-// });
-
-// export const config = {
-//   matcher: [
-//     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-//     '/(api|trpc)(.*)',
-//   ],
-// };
-
-
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 const isProtectedRoute = createRouteMatcher([
@@ -33,10 +8,15 @@ const isProtectedRoute = createRouteMatcher([
 
 export default clerkMiddleware(
   async (auth, request) => {
-    if (isProtectedRoute(request)) {
-      await auth.protect({
-        unauthenticatedUrl: new URL('/login', request.url).toString(),
-      });
+    try {
+      if (isProtectedRoute(request)) {
+        await auth.protect({
+          unauthenticatedUrl: new URL('/login', request.url).toString(),
+        });
+      }
+    } catch (error) {
+      console.error('[middleware callback error]', error);
+      throw error;
     }
   },
   { debug: true }
