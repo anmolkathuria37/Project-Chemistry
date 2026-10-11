@@ -208,3 +208,24 @@ model SavedDatePlan {
   @@index([userId, createdAt])
   @@map("saved_date_plans")
 }
+
+
+model CmsContent {
+  id           String   @id @default(cuid()) @db.VarChar(191)
+  section      String   @db.VarChar(80)
+  slug         String   @db.VarChar(191)
+  title        String   @db.VarChar(191)
+  description  String   @db.Text
+  category     String   @default("") @db.VarChar(120)
+  neighborhood String   @default("") @db.VarChar(191)
+  budgetLabel  String   @default("") @map("budget_label") @db.VarChar(120)
+  imageUrl     String   @default("") @map("image_url") @db.VarChar(1000)
+  published    Boolean  @default(false)
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([section, slug])
+  @@index([section, published, sortOrder])
+  @@map("cms_content")
+}
