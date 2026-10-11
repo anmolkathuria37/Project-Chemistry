@@ -117,8 +117,8 @@ export default function AdminPage() {
             </section>
 
             <section className="mt-7 rounded-2xl border border-border bg-card p-6">
-              <h2 className="font-semibold">Next admin modules</h2>
-              <p className="mt-2 text-sm text-muted-foreground">The secure overview is the first layer. Editable page content for Date Planner, Experiencex and Get Date Ready, media uploads, provider-specific integration setup, audit logs and transaction-level revenue need their own persistent data model and tests before they can safely control production behaviour.</p>
+              <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-semibold">Content management</h2><a href="/admin/content" className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90">Open CMS →</a></div>
+              <p className="mt-2 text-sm text-muted-foreground">Create and publish content for Date Planner, Experiencex and Get Date Ready from one admin workspace. Media storage, provider integrations, audit logs and transaction-level revenue will follow as separate modules.</p>
               <div className="mt-4 flex flex-wrap gap-2 text-xs">
                 {['Page content CMS', 'Media library', 'Discover settings', 'Integration health', 'Audit log', 'Payments ledger'].map((label) => <span key={label} className="rounded-full border border-border px-3 py-1.5">{label}</span>)}
               </div>
