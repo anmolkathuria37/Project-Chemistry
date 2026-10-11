@@ -1,18 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
-const isProtectedRoute = createRouteMatcher([
-  '/onboarding(.*)',
-  '/app(.*)',
-  '/admin(.*)',
-]);
-
-export default clerkMiddleware(async (auth, request) => {
-  if (isProtectedRoute(request)) {
-    await auth.protect({
-      unauthenticatedUrl: new URL('/login', request.url).toString(),
-    });
-  }
-});
+// Keep Clerk's request/session middleware active. Route authorization is
+// enforced in server layouts and API handlers to avoid Edge-runtime failures.
+export default clerkMiddleware();
 
 export const config = {
   matcher: [
