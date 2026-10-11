@@ -113,9 +113,27 @@ export default function DiscoverPage() {
         .select('age_min, age_max, interested_in')
         .eq('user_id', user.id)
         .maybeSingle();
-      const interestedGenders = Array.isArray(preference?.interested_in)
-        ? preference.interested_in.filter((value: unknown): value is string => typeof value === 'string')
+      // const interestedGenders = Array.isArray(preference?.interested_in)
+      //   ? preference.interested_in.filter((value: unknown): value is string => typeof value === 'string')
+      //   : [];
+      // const interestedGenders = Array.isArray(preference?.interested_in)
+      // ? preference.interested_in.filter(
+      //     (value: unknown): value is string => typeof value === 'string'
+      //   )
+      // : [];
+
+      // const interestedGenders = Array.isArray(preference?.interested_in)
+      //   ? preference.interested_in!.filter(
+      //       (value: unknown): value is string => typeof value === 'string'
+      //     )
+      //   : [];
+      const interestedIn = preference?.interested_in;
+      const interestedGenders = Array.isArray(interestedIn)
+        ? interestedIn.filter(
+          (value: unknown): value is string => typeof value === 'string'
+        )
         : [];
+
 
       let candidateQuery = supabase
         .from('profiles')
@@ -128,7 +146,23 @@ export default function DiscoverPage() {
         candidateQuery = candidateQuery.in('gender', interestedGenders);
       }
 
-      if (typeof preference?.age_min === 'number' && typeof preference?.age_max === 'number') {
+      // if (preference && typeof preference.age_min === 'number' && typeof preference.age_max === 'number') {
+      //     const today = new Date();
+      //     const oldestBirthDate = new Date(today);
+      //     oldestBirthDate.setFullYear(today.getFullYear() - preference.age_max - 1);
+      //     oldestBirthDate.setDate(oldestBirthDate.getDate() + 1);
+      //     const youngestBirthDate = new Date(today);
+      //     youngestBirthDate.setFullYear(today.getFullYear() - preference.age_min);
+      //     const asDate = (date: Date) => date.toISOString().slice(0, 10);
+      //     candidateQuery = candidateQuery
+      //       .gte('date_of_birth', asDate(oldestBirthDate))
+      //       .lte('date_of_birth', asDate(youngestBirthDate));
+      //   }
+      if (
+        preference &&
+        typeof preference.age_min === 'number' &&
+        typeof preference.age_max === 'number'
+      ) {
         const today = new Date();
         const oldestBirthDate = new Date(today);
         oldestBirthDate.setFullYear(today.getFullYear() - preference.age_max - 1);
@@ -390,9 +424,8 @@ export default function DiscoverPage() {
                 {currentProfile.photos.map((_, i) => (
                   <div
                     key={i}
-                    className={`h-1 flex-1 rounded-full transition-colors ${
-                      i === photoIndex ? 'bg-white' : 'bg-white/30'
-                    }`}
+                    className={`h-1 flex-1 rounded-full transition-colors ${i === photoIndex ? 'bg-white' : 'bg-white/30'
+                      }`}
                   />
                 ))}
               </div>
