@@ -90,7 +90,11 @@ export default function AdminContentPage() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Could not save content.');
-      setNotice(editingId ? 'Content updated.' : 'Content created.');
+      setNotice(
+        draft.published
+          ? (editingId ? 'Content updated and published. It is available to the website.' : 'Content published and available to the website.')
+          : (editingId ? 'Changes saved as a draft. Publish this item to make it visible on the website.' : 'Content saved as a draft. Click Publish in the content library to make it visible on the website.')
+      );
       resetForm();
       await loadItems();
     } catch (err) {
