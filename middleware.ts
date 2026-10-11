@@ -6,21 +6,13 @@ const isProtectedRoute = createRouteMatcher([
   '/admin(.*)',
 ]);
 
-export default clerkMiddleware(
-  async (auth, request) => {
-    try {
-      if (isProtectedRoute(request)) {
-        await auth.protect({
-          unauthenticatedUrl: new URL('/login', request.url).toString(),
-        });
-      }
-    } catch (error) {
-      console.error('[middleware callback error]', error);
-      throw error;
-    }
-  },
-  { debug: true }
-);
+export default clerkMiddleware(async (auth, request) => {
+  if (isProtectedRoute(request)) {
+    await auth.protect({
+      unauthenticatedUrl: new URL('/login', request.url).toString(),
+    });
+  }
+});
 
 export const config = {
   matcher: [
