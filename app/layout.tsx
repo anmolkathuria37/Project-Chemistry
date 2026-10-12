@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
-import { ClerkProvider } from '@clerk/nextjs';
+import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '@/lib/auth-context';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -30,12 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="font-sans antialiased">
-        <ClerkProvider>
+        <SessionProvider refetchOnWindowFocus={false}>
           <AuthProvider>
             {children}
             <Toaster />
           </AuthProvider>
-        </ClerkProvider>
+        </SessionProvider>
       </body>
     </html>
   );
