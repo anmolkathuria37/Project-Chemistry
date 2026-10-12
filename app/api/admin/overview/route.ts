@@ -1,31 +1,26 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-async function isAdmin() {
+async function isAdmin(email?: string | null) {
   const configured = (process.env.ADMIN_EMAILS ?? '')
     .split(',')
-    .map((email) => email.trim().toLowerCase())
+    .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
-  if (configured.length === 0) return false;
-
-  const user = await currentUser();
-  const primaryEmail = user?.emailAddresses?.find(
-    (item) => item.id === user.primaryEmailAddressId,
-  )?.emailAddress?.toLowerCase();
-
-  return Boolean(primaryEmail && configured.includes(primaryEmail));
+  return Boolean(email && configured.includes(email.trim().toLowerCase()));
 }
 
 export async function GET() {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
   }
-  if (!(await isAdmin())) {
+  if (!(await isAdmin(session?.user?.email))) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
   }
 
