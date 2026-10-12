@@ -1,8 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
-import { SessionProvider } from 'next-auth/react';
-import { AuthProvider } from '@/lib/auth-context';
+import { Providers } from '@/app/providers';
 import { Toaster } from '@/components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -30,12 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="font-sans antialiased">
-        <SessionProvider refetchOnWindowFocus={false}>
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </SessionProvider>
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
