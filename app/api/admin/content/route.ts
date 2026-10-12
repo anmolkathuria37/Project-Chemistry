@@ -1,4 +1,5 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -8,11 +9,11 @@ export const dynamic = 'force-dynamic';
 const SECTIONS = new Set(['date-planner', 'experiencex', 'get-date-ready']);
 
 async function requireAdmin() {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) return { error: NextResponse.json({ error: 'Authentication required.' }, { status: 401 }) };
   const allowed = (process.env.ADMIN_EMAILS ?? '').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
-  const user = await currentUser();
-  const email = user?.emailAddresses.find((item) => item.id === user.primaryEmailAddressId)?.emailAddress.toLowerCase();
+  const email = session?.user?.email?.trim().toLowerCase();
   if (!email || !allowed.includes(email)) return { error: NextResponse.json({ error: 'Admin access required.' }, { status: 403 }) };
   return { userId };
 }
