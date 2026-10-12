@@ -26,7 +26,7 @@ Copy `.env.example` to `.env.local` and configure:
 - `NEXT_PUBLIC_APP_URL`
 - `ADMIN_EMAILS`
 
-For Google OAuth, add `http://localhost:3000/api/auth/callback/google` to the Google OAuth client's authorized redirect URIs. Add the production URL `https://YOUR_DOMAIN/api/auth/callback/google` before deployment. The same Google Cloud OAuth client can be reused if you have permission to add these redirect URIs; do not copy secrets into source control.
+For Google OAuth, reuse the Google OAuth client ID already used by Smokey Tales (it is prefilled in `.env.example`). In Google Cloud Console, retrieve its client secret and add `http://localhost:3000/api/auth/callback/google` plus `https://YOUR_DOMAIN/api/auth/callback/google` to its authorized redirect URIs. Keep the client secret in `.env.local`/Vercel environment variables only; never commit it.
 
 ## Local verification
 
