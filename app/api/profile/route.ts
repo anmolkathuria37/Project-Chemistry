@@ -1,4 +1,5 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -27,10 +28,9 @@ function serializeProfile(user: any) {
   };
 }
 
-async function ensureUser(userId: string) {
-  const clerkUser = await currentUser();
-  const email = clerkUser?.emailAddresses?.find((item) => item.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? null;
-  const fullName = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(' ') || null;
+async function ensureUser(userId: string, authUser?: { email?: string | null; name?: string | null }) {
+  const email = authUser?.email ?? null;
+  const fullName = authUser?.name ?? null;
   return prisma.user.upsert({
     where: { id: userId },
     update: { ...(email ? { email } : {}), ...(fullName ? { fullName } : {}) },
@@ -39,10 +39,11 @@ async function ensureUser(userId: string) {
 }
 
 export async function GET() {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const user = await ensureUser(userId);
+    const user = await ensureUser(userId, session?.user);
     return NextResponse.json({ data: serializeProfile(user), error: null });
   } catch (error) {
     console.error('Profile GET failed:', error);
