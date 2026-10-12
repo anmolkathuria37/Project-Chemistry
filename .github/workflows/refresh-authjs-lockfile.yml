@@ -1,0 +1,59 @@
+name: Refresh Auth.js package lock
+
+on:
+  push:
+    branches:
+      - feat/authjs-migration
+
+permissions:
+  contents: read
+
+jobs:
+  resolve-lock:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry
+      SHADOW_DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry_shadow
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ci-placeholder-secret-for-build-validation-only
+      GOOGLE_CLIENT_ID: test-google-client-id.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: test-google-client-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Resolve dependencies and regenerate lockfile
+        run: npm install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: authjs-package-lock
+          path: package-lock.json
+          if-no-files-found: error
+
+  commit-lock:
+    needs: resolve-lock
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/authjs-migration
+      - uses: actions/download-artifact@v4
+        with:
+          name: authjs-package-lock
+          path: lockfile-artifact
+      - name: Commit updated package lock if changed
+        run: |
+          cp lockfile-artifact/package-lock.json package-lock.json
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json is already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: refresh package lock for Auth.js migration"
+          git push origin HEAD:feat/authjs-migration
