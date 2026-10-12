@@ -97,6 +97,21 @@ export async function PATCH(request: Request) {
       }
     }
     const existing = await ensureUser(userId, session?.user);
+    if (data.onboardingCompleted === true) {
+      const dob = Object.prototype.hasOwnProperty.call(data, 'dateOfBirth')
+        ? data.dateOfBirth
+        : existing.dateOfBirth;
+      if (!(dob instanceof Date) || Number.isNaN(dob.getTime())) {
+        return NextResponse.json({ error: 'Enter your date of birth before completing onboarding.' }, { status: 400 });
+      }
+      let age = new Date().getFullYear() - dob.getFullYear();
+      const today = new Date();
+      const monthDelta = today.getMonth() - dob.getMonth();
+      if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
+      if (age < 18 || age > 100 || dob > today) {
+        return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
+      }
+    }
     const updated = await prisma.user.update({ where: { id: userId }, data });
     return NextResponse.json({ data: serializeProfile(updated), error: null });
   } catch (error) {
