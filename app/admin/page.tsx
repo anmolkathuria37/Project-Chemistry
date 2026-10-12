@@ -75,7 +75,7 @@ export default function AdminPage() {
           <div role="alert" className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
             <p className="font-semibold">Dashboard unavailable</p>
             <p className="mt-1 text-muted-foreground">{error}</p>
-            {error.toLowerCase().includes('admin') && <p className="mt-2">Configure ADMIN_EMAILS in your local .env.local with the email address linked to your Clerk account, then restart the dev server.</p>}
+            {error.toLowerCase().includes('admin') && <p className="mt-2">Add the email you sign in with to ADMIN_EMAILS in .env.local, then restart the dev server.</p>}
           </div>
         )}
 
