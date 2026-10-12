@@ -217,7 +217,13 @@ export async function POST(request: Request) {
       const rows = raw.map((item: any) => toDb(table, item));
       if (table === 'profiles' || table === 'users') {
         if (rows.some((row: any) => row.id && row.id !== userId)) return NextResponse.json({ error: 'Cannot create another user profile.' }, { status: 403 });
-        rows.forEach((row: any) => row.id = userId);
+        rows.forEach((row: any) => {
+          row.id = userId;
+          // These fields are managed only by Auth.js/server-side account flows.
+          for (const key of ['email', 'name', 'passwordHash', 'emailVerified', 'image', 'isVerified', 'verificationBadges', 'createdAt', 'updatedAt']) {
+            delete row[key];
+          }
+        });
       }
       const ownerFields: Record<string, string> = { preferences: 'userId', saved_date_plans: 'userId', user_interests: 'userId', likes: 'likerId', passes: 'passerId', blocks: 'blockerId', reports: 'reporterId', messages: 'senderId' };
       const ownerField = ownerFields[table];
@@ -283,6 +289,10 @@ export async function POST(request: Request) {
       if (table === 'profiles' || table === 'users') {
         delete data.id;
         delete data.email;
+        delete data.name;
+        delete data.passwordHash;
+        delete data.emailVerified;
+        delete data.image;
         delete data.isVerified;
         delete data.verificationBadges;
         delete data.createdAt;
