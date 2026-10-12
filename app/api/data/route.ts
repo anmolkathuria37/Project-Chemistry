@@ -1,4 +1,5 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -162,10 +163,9 @@ async function ensureInterestCatalog() {
   await prisma.interest.createMany({ data: seed, skipDuplicates: true });
 }
 
-async function ensureUser(userId: string) {
-  const clerkUser = await currentUser();
-  const email = clerkUser?.emailAddresses?.find((item) => item.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? null;
-  const fullName = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(' ') || null;
+async function ensureUser(userId: string, authUser?: { email?: string | null; name?: string | null }) {
+  const email = authUser?.email ?? null;
+  const fullName = authUser?.name ?? null;
   await prisma.user.upsert({
     where: { id: userId },
     update: { ...(email ? { email } : {}), ...(fullName ? { fullName } : {}) },
@@ -174,7 +174,8 @@ async function ensureUser(userId: string) {
 }
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Please sign in first.' }, { status: 401 });
   try {
     const input = await request.json();
@@ -184,7 +185,7 @@ export async function POST(request: Request) {
     const action = String(input.action ?? 'select');
     const scope = ownerScope(table, userId, action);
     if (scope === null) return NextResponse.json({ error: 'Operation not allowed.' }, { status: 403 });
-    await ensureUser(userId);
+    await ensureUser(userId, session?.user);
     if (table === 'interests' && action === 'select') await ensureInterestCatalog();
 
     if (table === 'interests' && action !== 'select') return NextResponse.json({ error: 'Interest catalog is read-only.' }, { status: 403 });
