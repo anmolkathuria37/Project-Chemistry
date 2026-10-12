@@ -99,7 +99,7 @@ export const supabase = {
       return { data: { subscription: { unsubscribe() {} } } };
     },
     async signOut() { return { error: null }; },
-    async signUp() { return { data: { user: null }, error: { message: 'Use Clerk sign-up instead.' } }; },
-    async signInWithPassword() { return { data: { user: null }, error: { message: 'Use Clerk sign-in instead.' } }; },
+    async signUp() { return { data: { user: null }, error: { message: 'Use Auth.js sign-up instead.' } }; },
+    async signInWithPassword() { return { data: { user: null }, error: { message: 'Use Auth.js sign-in instead.' } }; },
   },
 };
