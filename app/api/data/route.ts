@@ -128,9 +128,15 @@ function ownerScope(table: string, userId: string, action: string) {
 function sanitize(table: string, rows: any, userId: string) {
   const map = (row: any) => {
     const result = fromDb(table, row);
-    if ((table === 'profiles' || table === 'users') && row?.id !== userId) {
-      delete result.email;
-      if (row.dateOfBirth) {
+    if (table === 'profiles' || table === 'users') {
+      // Auth.js credential and token metadata must never be exposed by the legacy data adapter.
+      delete result.password_hash;
+      delete result.email_verified;
+      delete result.image;
+      if (row?.id !== userId) {
+        delete result.email;
+      }
+      if (row?.id !== userId && row.dateOfBirth) {
         const dob = new Date(row.dateOfBirth);
         const today = new Date();
         let age = today.getFullYear() - dob.getFullYear();
@@ -139,7 +145,7 @@ function sanitize(table: string, rows: any, userId: string) {
         const ageOnlyDate = new Date();
         ageOnlyDate.setFullYear(ageOnlyDate.getFullYear() - age);
         result.date_of_birth = ageOnlyDate.toISOString().slice(0, 10);
-      } else {
+      } else if (row?.id !== userId) {
         result.date_of_birth = null;
       }
     }
