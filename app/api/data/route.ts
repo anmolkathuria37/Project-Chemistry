@@ -220,7 +220,7 @@ export async function POST(request: Request) {
         rows.forEach((row: any) => {
           row.id = userId;
           // These fields are managed only by Auth.js/server-side account flows.
-          for (const key of ['email', 'name', 'passwordHash', 'emailVerified', 'image', 'isVerified', 'verificationBadges', 'createdAt', 'updatedAt']) {
+          for (const key of ['email', 'name', 'passwordHash', 'emailVerified', 'image', 'isVerified', 'verificationBadges', 'onboardingCompleted', 'createdAt', 'updatedAt']) {
             delete row[key];
           }
         });
@@ -304,6 +304,20 @@ export async function POST(request: Request) {
           const monthDelta = today.getMonth() - dob.getMonth();
           if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
           if (Number.isNaN(dob.getTime()) || dob > today || age < 18 || age > 100) {
+            return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
+          }
+        }
+        if (data.onboardingCompleted === true) {
+          const existingUser = await prisma.user.findUnique({ where: { id: userId }, select: { dateOfBirth: true } });
+          const dob = data.dateOfBirth !== undefined ? data.dateOfBirth : existingUser?.dateOfBirth;
+          if (!(dob instanceof Date) || Number.isNaN(dob.getTime())) {
+            return NextResponse.json({ error: 'Enter your date of birth before completing onboarding.' }, { status: 400 });
+          }
+          let age = new Date().getFullYear() - dob.getFullYear();
+          const today = new Date();
+          const monthDelta = today.getMonth() - dob.getMonth();
+          if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
+          if (age < 18 || age > 100 || dob > today) {
             return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
           }
         }
