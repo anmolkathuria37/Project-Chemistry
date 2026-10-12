@@ -67,7 +67,8 @@ const fieldMap: Record<string, string> = {
 };
 
 export async function PATCH(request: Request) {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await request.json();
@@ -95,7 +96,7 @@ export async function PATCH(request: Request) {
         data[target] = value;
       }
     }
-    const existing = await ensureUser(userId);
+    const existing = await ensureUser(userId, session?.user);
     const updated = await prisma.user.update({ where: { id: userId }, data });
     return NextResponse.json({ data: serializeProfile(updated), error: null });
   } catch (error) {
