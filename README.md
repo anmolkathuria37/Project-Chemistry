@@ -27,7 +27,7 @@ Create a free MongoDB Atlas cluster, add a database user, and allow your develop
 
 Copy `.env.example` to `.env.local` and fill in your own values:
 
-- `DATABASE_URL`: application database connection string
+- `MONGODB_URL`: application database connection string
 - `NEXTAUTH_URL`: local or deployed app URL
 - `NEXTAUTH_SECRET`: a long, random secret used to sign/encrypt sessions
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: credentials from your Google OAuth client
