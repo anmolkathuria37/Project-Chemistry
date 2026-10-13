@@ -17,7 +17,7 @@ Project Chemistry uses Auth.js (NextAuth.js v4) with Google OAuth and email/pass
 
 Copy `.env.example` to `.env.local` and configure:
 
-- `DATABASE_URL`
+- `MONGODB_URL`
 - `NEXTAUTH_URL`
 - `NEXTAUTH_SECRET`
 - `GOOGLE_CLIENT_ID`
