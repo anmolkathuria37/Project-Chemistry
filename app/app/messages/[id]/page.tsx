@@ -330,7 +330,7 @@ export default function ChatPage() {
           <DialogHeader>
             <DialogTitle>Block {otherProfile.full_name}?</DialogTitle>
             <DialogDescription>
-              They won't be able to see your profile or send you messages. This action cannot be undone.
+              They won&apos;t be able to see your profile or send you messages. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
