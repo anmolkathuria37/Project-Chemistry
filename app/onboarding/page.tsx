@@ -305,7 +305,7 @@ export default function OnboardingPage() {
           <div className="animate-fade-in rounded-3xl border border-white/70 bg-card/95 p-5 shadow-card backdrop-blur-sm sm:p-8 md:p-10">
             {step === 'basics' && (
               <>
-                <h1 className="mb-2 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">Let's start with the basics</h1>
+                <h1 className="mb-2 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">Let&apos;s start with the basics</h1>
                 <p className="mb-6 text-sm leading-6 text-muted-foreground sm:mb-8 sm:text-base">This information helps us find compatible people for you.</p>
                 <div className="space-y-5">
                   <div className="space-y-2">
