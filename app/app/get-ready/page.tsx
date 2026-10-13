@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState } from 'react';
 import { Shirt, Sparkles, Footprints, Watch, Gift, Heart, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -104,7 +106,7 @@ export default function GetReadyPage() {
         {looks.map((look) => (
           <div key={look.title} className="bg-card rounded-2xl overflow-hidden border border-border/50 shadow-soft hover:shadow-card transition-all group">
             <div className="relative aspect-[3/4] overflow-hidden">
-              <img src={look.image} alt={look.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <Image width={1200} height={800} unoptimized src={look.image} alt={look.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <button
                 onClick={() => toggleSave(look.title)}
                 className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center transition-colors"
