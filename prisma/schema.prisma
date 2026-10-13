@@ -12,21 +12,21 @@ datasource db {
 
 model User {
   // Prisma generates stable IDs for new Auth.js users; existing profile IDs remain intact.
-  id                  String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  name                String?  @db.VarChar(191)
-  email               String?  @unique @db.VarChar(191)
-  emailVerified       DateTime? @map("email_verified") @db.DateTime(3)
-  image               String?  @db.VarChar(1000)
-  passwordHash        String?  @map("password_hash") @db.VarChar(255)
-  fullName            String?  @map("full_name") @db.VarChar(191)
-  pronouns            String?  @db.VarChar(80)
-  gender              String?  @db.VarChar(80)
+  id                  String   @id @default(cuid()) @map("_id")
+  name                String?
+  email               String?  @unique
+  emailVerified       DateTime? @map("email_verified")
+  image               String?
+  passwordHash        String?  @map("password_hash")
+  fullName            String?  @map("full_name")
+  pronouns            String?
+  gender              String?
   bio                 String?
   dateOfBirth         DateTime? @map("date_of_birth")
-  city                String?  @db.VarChar(120)
-  neighborhood        String?  @db.VarChar(120)
-  occupation          String?  @db.VarChar(191)
-  education           String?  @db.VarChar(191)
+  city                String?
+  neighborhood        String?
+  occupation          String?
+  education           String?
   photos              Json?
   profileCompletion   Int      @default(0) @map("profile_completion")
   isVerified          Boolean  @default(false) @map("is_verified")
@@ -59,18 +59,18 @@ model User {
 
 
 model Account {
-  id                String  @id @default(cuid()) @map("_id") @db.VarChar(191)
-  userId            String  @map("user_id") @db.VarChar(191)
-  type              String  @db.VarChar(191)
-  provider          String  @db.VarChar(191)
-  providerAccountId String  @map("provider_account_id") @db.VarChar(191)
+  id                String  @id @default(cuid()) @map("_id")
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
   refresh_token     String?
   access_token      String?
   expires_at        Int?
-  token_type        String? @db.VarChar(191)
-  scope             String? @db.VarChar(191)
+  token_type        String?
+  scope             String?
   id_token          String?
-  session_state     String? @db.VarChar(191)
+  session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
@@ -79,10 +79,10 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  sessionToken String   @unique @map("session_token") @db.VarChar(191)
-  userId       String   @map("user_id") @db.VarChar(191)
-  expires      DateTime @db.DateTime(3)
+  id           String   @id @default(cuid()) @map("_id")
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -91,21 +91,21 @@ model Session {
 
 model VerificationToken {
   id         String   @id @default(cuid()) @map("_id")
-  identifier String   @db.VarChar(191)
-  token      String   @unique @db.VarChar(191)
-  expires    DateTime @db.DateTime(3)
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
   @@unique([identifier, token])
   @@map("auth_verification_tokens")
 }
 
 model Preference {
-  id          String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  userId      String   @unique @map("user_id") @db.VarChar(191)
+  id          String   @id @default(cuid()) @map("_id")
+  userId      String   @unique @map("user_id")
   ageMin      Int      @default(18) @map("age_min")
   ageMax      Int      @default(99) @map("age_max")
   distanceKm  Int      @default(25) @map("distance_km")
-  lookingFor  String   @default("exploring") @map("looking_for") @db.VarChar(80)
+  lookingFor  String   @default("exploring") @map("looking_for")
   interestedIn Json?   @map("interested_in")
   budgetMin   Int      @default(0) @map("budget_min")
   budgetMax   Int      @default(10000) @map("budget_max")
@@ -117,10 +117,10 @@ model Preference {
 }
 
 model Interest {
-  id       String        @id @default(cuid()) @map("_id") @db.VarChar(191)
-  name     String        @unique @db.VarChar(120)
-  category String        @db.VarChar(120)
-  icon     String?      @db.VarChar(80)
+  id       String        @id @default(cuid()) @map("_id")
+  name     String        @unique
+  category String
+  icon     String?
   users    UserInterest[]
 
   @@index([category])
@@ -129,8 +129,8 @@ model Interest {
 
 model UserInterest {
   id         String   @id @default(cuid()) @map("_id")
-  userId     String   @map("user_id") @db.VarChar(191)
-  interestId String   @map("interest_id") @db.VarChar(191)
+  userId     String   @map("user_id")
+  interestId String   @map("interest_id")
   createdAt  DateTime @default(now()) @map("created_at")
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   interest   Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
@@ -141,11 +141,11 @@ model UserInterest {
 }
 
 model Like {
-  id          String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  likerId     String   @map("liker_id") @db.VarChar(191)
-  likedId     String   @map("liked_id") @db.VarChar(191)
+  id          String   @id @default(cuid()) @map("_id")
+  likerId     String   @map("liker_id")
+  likedId     String   @map("liked_id")
   isSuperLike Boolean  @default(false) @map("is_super_like")
-  introNote   String?  @map("intro_note") @db.VarChar(500)
+  introNote   String?  @map("intro_note")
   createdAt   DateTime @default(now()) @map("created_at")
   liker       User     @relation("LikeSender", fields: [likerId], references: [id], onDelete: Cascade)
   liked       User     @relation("LikeRecipient", fields: [likedId], references: [id], onDelete: Cascade)
@@ -156,9 +156,9 @@ model Like {
 }
 
 model Pass {
-  id        String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  passerId  String   @map("passer_id") @db.VarChar(191)
-  passedId  String   @map("passed_id") @db.VarChar(191)
+  id        String   @id @default(cuid()) @map("_id")
+  passerId  String   @map("passer_id")
+  passedId  String   @map("passed_id")
   createdAt DateTime @default(now()) @map("created_at")
   passer    User     @relation("PassSender", fields: [passerId], references: [id], onDelete: Cascade)
   passed    User     @relation("PassRecipient", fields: [passedId], references: [id], onDelete: Cascade)
@@ -169,9 +169,9 @@ model Pass {
 }
 
 model Match {
-  id        String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  user1Id   String   @map("user1_id") @db.VarChar(191)
-  user2Id   String   @map("user2_id") @db.VarChar(191)
+  id        String   @id @default(cuid()) @map("_id")
+  user1Id   String   @map("user1_id")
+  user2Id   String   @map("user2_id")
   createdAt DateTime @default(now()) @map("created_at")
   user1     User     @relation("MatchUser1", fields: [user1Id], references: [id], onDelete: Cascade)
   user2     User     @relation("MatchUser2", fields: [user2Id], references: [id], onDelete: Cascade)
@@ -184,8 +184,8 @@ model Match {
 }
 
 model Conversation {
-  id            String    @id @default(cuid()) @map("_id") @db.VarChar(191)
-  matchId       String    @unique @map("match_id") @db.VarChar(191)
+  id            String    @id @default(cuid()) @map("_id")
+  matchId       String    @unique @map("match_id")
   createdAt     DateTime  @default(now()) @map("created_at")
   lastMessageAt DateTime? @map("last_message_at")
   match         Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
@@ -196,9 +196,9 @@ model Conversation {
 }
 
 model Message {
-  id             String       @id @default(cuid()) @map("_id") @db.VarChar(191)
-  conversationId String       @map("conversation_id") @db.VarChar(191)
-  senderId       String       @map("sender_id") @db.VarChar(191)
+  id             String       @id @default(cuid()) @map("_id")
+  conversationId String       @map("conversation_id")
+  senderId       String       @map("sender_id")
   content        String
   createdAt      DateTime     @default(now()) @map("created_at")
   readAt         DateTime?    @map("read_at")
@@ -211,9 +211,9 @@ model Message {
 }
 
 model Block {
-  id        String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  blockerId String   @map("blocker_id") @db.VarChar(191)
-  blockedId String   @map("blocked_id") @db.VarChar(191)
+  id        String   @id @default(cuid()) @map("_id")
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
   createdAt DateTime @default(now()) @map("created_at")
   blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
   blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
@@ -224,12 +224,12 @@ model Block {
 }
 
 model Report {
-  id             String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  reporterId     String   @map("reporter_id") @db.VarChar(191)
-  reportedUserId String?  @map("reported_user_id") @db.VarChar(191)
-  category       String   @db.VarChar(120)
+  id             String   @id @default(cuid()) @map("_id")
+  reporterId     String   @map("reporter_id")
+  reportedUserId String?  @map("reported_user_id")
+  category       String
   details        String?
-  status         String   @default("pending") @db.VarChar(40)
+  status         String   @default("pending")
   createdAt      DateTime @default(now()) @map("created_at")
   reporter       User     @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
   reportedUser   User?    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
@@ -240,15 +240,15 @@ model Report {
 }
 
 model SavedDatePlan {
-  id           String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  userId       String   @map("user_id") @db.VarChar(191)
-  category     String   @db.VarChar(80)
-  title        String   @db.VarChar(191)
+  id           String   @id @default(cuid()) @map("_id")
+  userId       String   @map("user_id")
+  category     String
+  title        String
   description  String
-  neighborhood String   @default("") @db.VarChar(191)
-  budgetLabel  String   @default("") @map("budget_label") @db.VarChar(120)
+  neighborhood String   @default("")
+  budgetLabel  String   @default("") @map("budget_label")
   preferredDate DateTime? @map("preferred_date")
-  imageUrl     String   @default("") @map("image_url") @db.VarChar(1000)
+  imageUrl     String   @default("") @map("image_url")
   createdAt    DateTime @default(now()) @map("created_at")
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -258,15 +258,15 @@ model SavedDatePlan {
 
 
 model CmsContent {
-  id           String   @id @default(cuid()) @map("_id") @db.VarChar(191)
-  section      String   @db.VarChar(80)
-  slug         String   @db.VarChar(191)
-  title        String   @db.VarChar(191)
+  id           String   @id @default(cuid()) @map("_id")
+  section      String
+  slug         String
+  title        String
   description  String
-  category     String   @default("") @db.VarChar(120)
-  neighborhood String   @default("") @db.VarChar(191)
-  budgetLabel  String   @default("") @map("budget_label") @db.VarChar(120)
-  imageUrl     String   @default("") @map("image_url") @db.VarChar(1000)
+  category     String   @default("")
+  neighborhood String   @default("")
+  budgetLabel  String   @default("") @map("budget_label")
+  imageUrl     String   @default("") @map("image_url")
   published    Boolean  @default(false)
   sortOrder    Int      @default(0) @map("sort_order")
   createdAt    DateTime @default(now()) @map("created_at")
