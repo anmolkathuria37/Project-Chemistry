@@ -178,7 +178,13 @@ async function ensureInterestCatalog() {
     Games: ['Board Games', 'Video Games'],
   };
   const seed = Object.entries(categories).flatMap(([category, names]) => names.map((name) => ({ name, category })));
-  await prisma.interest.createMany({ data: seed, skipDuplicates: true });
+  // MongoDB's Prisma connector does not support createMany(skipDuplicates).
+  // Upsert by the unique interest name so repeated catalog reads are idempotent.
+  await Promise.all(seed.map((item) => prisma.interest.upsert({
+    where: { name: item.name },
+    create: item,
+    update: { category: item.category },
+  })));
 }
 
 async function ensureUser(userId: string, authUser?: { email?: string | null; name?: string | null }) {
