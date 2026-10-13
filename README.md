@@ -52,7 +52,7 @@ Open http://localhost:3000. The first authenticated request creates the matching
 1. Provision a MongoDB Atlas database (the Free cluster is suitable for development/demo use; observe its storage and usage limits).
 2. Configure the Google OAuth client with the deployed callback URL `https://YOUR_DOMAIN/api/auth/callback/google`.
 3. Add the environment variables from `.env.example` to your hosting provider. Use production credentials, never the local placeholders.
-4. Deploy with Node.js 20+ and run `npm install`, `npx prisma generate`, and `npm run db:migrate` as part of the release.
+4. Deploy with Node.js 20+ and run `npm install`, `npx prisma generate`, and `npm run db:push` before serving the application. MongoDB uses `prisma db push`, not Prisma SQL migration files.
 5. Confirm the validation workflow passes, then smoke-test signup, sign-in, onboarding, discovery, mutual likes, messaging, profile edits, preferences, safety actions, and saved date plans.
 
 Do not expose `DATABASE_URL`, `NEXTAUTH_SECRET`, or `GOOGLE_CLIENT_SECRET` as `NEXT_PUBLIC_*` variables.
@@ -73,4 +73,4 @@ Do not expose `DATABASE_URL`, `NEXTAUTH_SECRET`, or `GOOGLE_CLIENT_SECRET` as `N
 - `npm run lint` — Next.js lint
 - `npx prisma validate` — validate the Prisma schema
 - `npx prisma generate` — regenerate the Prisma client
-- `npm run db:migrate` — apply the Prisma schema with `npx prisma db push`
+- `npm run db:push` — synchronize the Prisma schema to MongoDB
