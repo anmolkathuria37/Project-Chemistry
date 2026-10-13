@@ -45,6 +45,7 @@ export default function OnboardingPage() {
 
   // Form state
   const [fullName, setFullName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [pronouns, setPronouns] = useState('');
   const [gender, setGender] = useState('');
   const [occupation, setOccupation] = useState('');
@@ -69,6 +70,7 @@ export default function OnboardingPage() {
     }
     if (!loading && user && profile) {
       setFullName(profile.full_name || '');
+      setDateOfBirth(profile.date_of_birth || '');
       setPronouns(profile.pronouns || '');
       setGender(profile.gender || '');
       setOccupation(profile.occupation || '');
@@ -136,6 +138,21 @@ export default function OnboardingPage() {
           setSaving(false);
           return;
         }
+        if (!dateOfBirth) {
+          toast.error('Please enter your date of birth.');
+          setSaving(false);
+          return;
+        }
+        const birthDate = new Date(`${dateOfBirth}T00:00:00`);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDelta = today.getMonth() - birthDate.getMonth();
+        if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birthDate.getDate())) age--;
+        if (Number.isNaN(birthDate.getTime()) || birthDate > today || age < 18 || age > 100) {
+          toast.error('Chemistry is only available to people aged 18 to 100.');
+          setSaving(false);
+          return;
+        }
         if (!gender) {
           toast.error('Please select your gender.');
           setSaving(false);
@@ -143,6 +160,7 @@ export default function OnboardingPage() {
         }
         const { error } = await supabase.from('profiles').update({
           full_name: fullName,
+          date_of_birth: dateOfBirth,
           pronouns,
           gender,
           occupation,
@@ -313,6 +331,19 @@ export default function OnboardingPage() {
                   <div className="space-y-2">
                     <Label htmlFor="name">Full name *</Label>
                     <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" className="rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="date-of-birth">Date of birth *</Label>
+                    <Input
+                      id="date-of-birth"
+                      type="date"
+                      value={dateOfBirth}
+                      max={new Date().toISOString().slice(0, 10)}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      required
+                      className="rounded-xl"
+                    />
+                    <p className="text-xs text-muted-foreground">You must be 18 or older. Your date of birth stays private.</p>
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
