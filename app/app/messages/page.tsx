@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -144,7 +146,7 @@ export default function MessagesListPage() {
             className="flex items-center gap-3 bg-card rounded-2xl p-3 border border-border/50 hover:border-primary/30 hover:shadow-card transition-all"
           >
             {c.other_profile.photos?.[0] ? (
-              <img src={c.other_profile.photos[0]} alt={c.other_profile.full_name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+              <Image width={1200} height={800} unoptimized src={c.other_profile.photos[0]} alt={c.other_profile.full_name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
             ) : (
               <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
                 <Shield className="w-5 h-5 text-muted-foreground/30" />
