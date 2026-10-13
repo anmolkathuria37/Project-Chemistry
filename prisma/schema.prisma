@@ -1,4 +1,4 @@
-// Project Chemistry relational schema. Auth.js owns sign-in/session identity.
+// Project Chemistry MongoDB schema. Auth.js owns sign-in/session identity.
 // Never authorize from a client-supplied user ID; derive it from the verified session.
 
 generator client {
