@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
@@ -374,7 +376,7 @@ export default function OnboardingPage() {
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {photos.map((url, i) => (
                       <div key={url} className="group relative aspect-square overflow-hidden rounded-xl border border-border">
-                        <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
+                        <Image width={1200} height={800} unoptimized src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
                         {i === 0 && <div className="absolute bottom-0 left-0 right-0 bg-primary/90 py-1 text-center text-xs font-medium text-white">Main Photo</div>}
                         <button type="button" aria-label={`Remove photo ${i + 1}`} onClick={() => removePhoto(url)} className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-lg text-white opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">×</button>
                       </div>
