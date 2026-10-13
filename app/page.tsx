@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -97,18 +99,18 @@ export default function LandingPage() {
               <div className="relative grid grid-cols-2 gap-4">
                 <div className="space-y-4 pt-8">
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[3/4]">
-                    <img src="https://images.pexels.com/photos/9608431/pexels-photo-9608431.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at dinner" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/9608431/pexels-photo-9608431.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at dinner" className="w-full h-full object-cover" />
                   </div>
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[4/3]">
-                    <img src="https://images.pexels.com/photos/2513611/pexels-photo-2513611.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Live music event" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/2513611/pexels-photo-2513611.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Live music event" className="w-full h-full object-cover" />
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[4/3]">
-                    <img src="https://images.pexels.com/photos/4255394/pexels-photo-4255394.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at cafe" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/4255394/pexels-photo-4255394.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at cafe" className="w-full h-full object-cover" />
                   </div>
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[3/4]">
-                    <img src="https://images.pexels.com/photos/36534064/pexels-photo-36534064.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Fashion inspiration" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/36534064/pexels-photo-36534064.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Fashion inspiration" className="w-full h-full object-cover" />
                   </div>
                 </div>
               </div>
@@ -205,7 +207,7 @@ export default function LandingPage() {
               <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl p-8 border border-border/50">
                 <div className="bg-card rounded-2xl shadow-card overflow-hidden border border-border/50">
                   <div className="relative h-80">
-                    <img src="https://images.pexels.com/photos/5910783/pexels-photo-5910783.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Profile preview" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/5910783/pexels-photo-5910783.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Profile preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 text-white">
                       <p className="font-display text-2xl font-bold">Ananya, 26</p>
@@ -253,7 +255,7 @@ export default function LandingPage() {
             ].map((exp) => (
               <div key={exp.title} className="group cursor-pointer">
                 <div className="rounded-2xl overflow-hidden shadow-card aspect-[4/5] mb-4 relative">
-                  <img src={exp.img} alt={exp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <Image width={1200} height={800} unoptimized src={exp.img} alt={exp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/90 backdrop-blur flex items-center justify-center">
                     <exp.icon className="w-5 h-5 text-primary" />
