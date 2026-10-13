@@ -86,9 +86,21 @@ function buildWhere(table: string, filters: any[] = []) {
       continue;
     }
     const key = field(table, item.column);
-    const value = item.operator === 'in' || item.operator === 'not_in'
+    const rawValue = item.operator === 'in' || item.operator === 'not_in'
       ? parseInValue(item.value)
-      : item.operator === 'not_is' ? item.value : item.value;
+      : item.value;
+    // Prisma DateTime filters must receive Date objects, not date-only strings.
+    // The legacy client sends DOB range filters as YYYY-MM-DD.
+    const isDateOfBirth = (table === 'users' || table === 'profiles') && key === 'dateOfBirth';
+    const asDate = (value: any) => {
+      if (typeof value !== 'string') return value;
+      const normalized = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00.000Z` : value;
+      const parsed = new Date(normalized);
+      return Number.isNaN(parsed.getTime()) ? value : parsed;
+    };
+    const value = isDateOfBirth
+      ? (Array.isArray(rawValue) ? rawValue.map(asDate) : asDate(rawValue))
+      : rawValue;
     let condition: any;
     switch (item.operator) {
       case 'eq': condition = value; break;
