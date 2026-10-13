@@ -68,7 +68,7 @@ export default function LandingPage() {
                 Dating should lead <span className="text-primary italic">somewhere.</span>
               </h1>
               <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-lg">
-                Meet people who get you. Discover experiences you'll love. Turn a match into a real-world memory.
+                Meet people who get you. Discover experiences you&apos;ll love. Turn a match into a real-world memory.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Button asChild size="lg" className="rounded-full text-base h-12 px-8 bg-burgundy-gradient hover:opacity-90">
@@ -137,7 +137,7 @@ export default function LandingPage() {
               From a match to a memory
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Every great relationship starts with a great date. We're built for the whole journey.
+              Every great relationship starts with a great date. We&apos;re built for the whole journey.
             </p>
           </div>
           <div className="grid md:grid-cols-3 lg:grid-cols-7 gap-4">
@@ -241,7 +241,7 @@ export default function LandingPage() {
           <div className="text-center max-w-2xl mx-auto mb-12">
             <p className="text-primary font-medium text-sm uppercase tracking-wider mb-3">Experiences</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground text-balance">
-              Plan dates you'll actually want to go on
+              Plan dates you&apos;ll actually want to go on
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -292,7 +292,7 @@ export default function LandingPage() {
             <div className="order-1 lg:order-2">
               <p className="text-primary font-medium text-sm uppercase tracking-wider mb-3">Trust & Safety</p>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground text-balance">
-                Safety is not a feature. It's the foundation.
+                Safety is not a feature. It&apos;s the foundation.
               </h2>
               <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
                 Every profile is age-verified. Every photo is moderated. Every user controls their privacy. We provide tools to block, report, and stay safe — because trust is everything.
@@ -345,7 +345,7 @@ export default function LandingPage() {
             Your next great date starts here.
           </h2>
           <p className="mt-6 text-muted-foreground text-lg">
-            Join Chemistry today. Meet someone who gets you, plan a date you'll both love, and see where it goes.
+            Join Chemistry today. Meet someone who gets you, plan a date you&apos;ll both love, and see where it goes.
           </p>
           <Button asChild size="lg" className="mt-8 rounded-full text-base h-14 px-10 bg-burgundy-gradient hover:opacity-90">
             <Link href={cta.href}>{cta.label}</Link>
