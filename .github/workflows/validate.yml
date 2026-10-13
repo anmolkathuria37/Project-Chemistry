@@ -8,6 +8,7 @@ on:
       - main
       - feat/mysql-clerk-migration-foundation
       - feat/authjs-migration
+      - feat/mongodb-atlas-authjs
 
 permissions:
   contents: read
@@ -16,8 +17,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry
-      SHADOW_DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry_shadow
+      MONGODB_URL: mongodb://127.0.0.1:27017/project_chemistry
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: ci-placeholder-secret-for-build-validation-only
       GOOGLE_CLIENT_ID: test-google-client-id.apps.googleusercontent.com

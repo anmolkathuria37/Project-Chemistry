@@ -11,7 +11,7 @@
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
-    "db:migrate": "prisma migrate deploy"
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
