@@ -14,7 +14,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-      allowDangerousEmailAccountLinking: false,
+      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       name: 'Email and password',
