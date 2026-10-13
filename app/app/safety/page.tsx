@@ -12,7 +12,7 @@ export default function SafetyPage() {
           <Shield className="w-8 h-8 text-primary" />
         </div>
         <h1 className="font-display text-3xl font-bold text-foreground">Safety Center</h1>
-        <p className="text-muted-foreground mt-2">Your safety is our top priority. Here's how we protect you and what you can do.</p>
+        <p className="text-muted-foreground mt-2">Your safety is our top priority. Here&apos;s how we protect you and what you can do.</p>
       </div>
 
       {/* Quick actions */}
@@ -89,7 +89,7 @@ export default function SafetyPage() {
             <span className="text-sm font-semibold text-destructive">112</span>
           </div>
           <div className="flex items-center justify-between bg-background rounded-xl p-3 border border-border/50">
-            <span className="text-sm text-foreground">Women's Helpline</span>
+            <span className="text-sm text-foreground">Women&apos;s Helpline</span>
             <span className="text-sm font-semibold text-destructive">1091</span>
           </div>
           <div className="flex items-center justify-between bg-background rounded-xl p-3 border border-border/50">
