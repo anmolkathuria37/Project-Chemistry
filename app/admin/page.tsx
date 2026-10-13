@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Activity, AlertTriangle, CalendarHeart, CheckCircle2, CircleDollarSign, HeartHandshake, Loader2, PlugZap, RefreshCw, Users, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  async function loadOverview() {
+  const loadOverview = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -52,9 +52,9 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
 
-  useEffect(() => { void loadOverview(); }, []);
+  useEffect(() => { void loadOverview(); }, [loadOverview]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
