@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase-client';
@@ -390,7 +392,7 @@ export default function DiscoverPage() {
         <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-card bg-card animate-scale-in" key={currentProfile.id}>
           {/* Photo */}
           {currentProfile.photos?.[photoIndex] ? (
-            <img
+            <Image width={1200} height={800} unoptimized
               src={currentProfile.photos[photoIndex]}
               alt={currentProfile.full_name}
               className="w-full h-full object-cover"
