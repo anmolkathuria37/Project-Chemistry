@@ -223,7 +223,7 @@ export default function DiscoverPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, profile, calculateCompatibility]);
+  }, [user, calculateCompatibility]);
 
   useEffect(() => {
     fetchProfiles();
