@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase-client';
@@ -34,7 +36,7 @@ export default function DiscoverPage() {
     return age;
   };
 
-  const calculateCompatibility = (target: Profile, myInterests: string[], theirInterests: string[]): { score: number; reasons: string[]; shared: string[] } => {
+  const calculateCompatibility = useCallback((target: Profile, myInterests: string[], theirInterests: string[]): { score: number; reasons: string[]; shared: string[] } => {
     const shared = myInterests.filter((i) => theirInterests.includes(i));
     const interestScore = Math.min(40, (shared.length / Math.max(1, Math.max(myInterests.length, theirInterests.length))) * 40);
     const bioScore = target.bio && target.bio.length > 50 ? 15 : 5;
@@ -54,7 +56,7 @@ export default function DiscoverPage() {
     if (reasons.length === 0) reasons.push('New to your area');
 
     return { score: Math.min(99, score), reasons, shared };
-  };
+  }, [profile]);
 
   const fetchProfiles = useCallback(async () => {
     if (!user) return;
@@ -223,7 +225,7 @@ export default function DiscoverPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, profile]);
+  }, [user, calculateCompatibility]);
 
   useEffect(() => {
     fetchProfiles();
@@ -364,8 +366,8 @@ export default function DiscoverPage() {
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Heart className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="font-display text-2xl font-bold text-foreground mb-2">You're all caught up!</h2>
-          <p className="text-muted-foreground mb-6">You've seen everyone in your area for now. Check back later for new people, or adjust your preferences.</p>
+          <h2 className="font-display text-2xl font-bold text-foreground mb-2">You&apos;re all caught up!</h2>
+          <p className="text-muted-foreground mb-6">You&apos;ve seen everyone in your area for now. Check back later for new people, or adjust your preferences.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button onClick={() => { fetchProfiles(); setCurrentIndex(0); }} className="rounded-full">
               Refresh Feed
@@ -390,7 +392,7 @@ export default function DiscoverPage() {
         <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-card bg-card animate-scale-in" key={currentProfile.id}>
           {/* Photo */}
           {currentProfile.photos?.[photoIndex] ? (
-            <img
+            <Image width={1200} height={800} unoptimized
               src={currentProfile.photos[photoIndex]}
               alt={currentProfile.full_name}
               className="w-full h-full object-cover"

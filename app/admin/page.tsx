@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Activity, AlertTriangle, CalendarHeart, CheckCircle2, CircleDollarSign, HeartHandshake, Loader2, PlugZap, RefreshCw, Users, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  async function loadOverview() {
+  const loadOverview = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -52,9 +52,9 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
 
-  useEffect(() => { void loadOverview(); }, []);
+  useEffect(() => { void loadOverview(); }, [loadOverview]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -75,7 +75,7 @@ export default function AdminPage() {
           <div role="alert" className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
             <p className="font-semibold">Dashboard unavailable</p>
             <p className="mt-1 text-muted-foreground">{error}</p>
-            {error.toLowerCase().includes('admin') && <p className="mt-2">Configure ADMIN_EMAILS in your local .env.local with the email address linked to your Clerk account, then restart the dev server.</p>}
+            {error.toLowerCase().includes('admin') && <p className="mt-2">Add the email you sign in with to ADMIN_EMAILS in .env.local, then restart the dev server.</p>}
           </div>
         )}
 

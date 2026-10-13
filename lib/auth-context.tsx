@@ -1,11 +1,20 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { useClerk, useUser } from '@clerk/nextjs';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { signOut as nextAuthSignOut, useSession } from 'next-auth/react';
 import type { Profile } from '@/lib/supabase-client';
 
+type AppUser = {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  primaryEmailAddress?: { emailAddress: string } | null;
+};
+
 type AuthContextType = {
-  user: { id: string; email?: string | null; firstName?: string | null; lastName?: string | null; primaryEmailAddress?: { emailAddress: string } | null } | null;
+  user: AppUser | null;
   profile: Profile | null;
   loading: boolean;
   signOut: () => Promise<void>;
@@ -21,21 +30,25 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { user: clerkUser, isLoaded } = useUser();
-  const { signOut: clerkSignOut } = useClerk();
+  const { data: session, status } = useSession();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
-  const refreshProfile = async () => {
-    if (!clerkUser) {
+  const refreshProfile = useCallback(async () => {
+    if (!session?.user?.id) {
       setProfile(null);
       setProfileLoading(false);
       return;
     }
+    setProfileLoading(true);
     try {
       const pendingDob = sessionStorage.getItem('chemistry_dob');
       if (pendingDob) {
-        const dobResponse = await fetch('/api/profile', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ date_of_birth: pendingDob }) });
+        const dobResponse = await fetch('/api/profile', {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ date_of_birth: pendingDob }),
+        });
         if (dobResponse.ok) sessionStorage.removeItem('chemistry_dob');
       }
       const response = await fetch('/api/profile', { cache: 'no-store' });
@@ -48,32 +61,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setProfileLoading(false);
     }
-  };
+  }, [session?.user?.id]);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!clerkUser) {
+    if (status === 'loading') return;
+    if (!session?.user?.id) {
       setProfile(null);
       setProfileLoading(false);
       return;
     }
-    setProfileLoading(true);
     void refreshProfile();
-  }, [isLoaded, clerkUser?.id]);
+  }, [status, session?.user?.id, refreshProfile]);
 
-  const user = useMemo(() => clerkUser ? ({
-    id: clerkUser.id,
-    email: clerkUser.primaryEmailAddress?.emailAddress ?? null,
-    firstName: clerkUser.firstName,
-    lastName: clerkUser.lastName,
-    primaryEmailAddress: clerkUser.primaryEmailAddress ? { emailAddress: clerkUser.primaryEmailAddress.emailAddress } : null,
-  }) : null, [clerkUser]);
+  const user = useMemo<AppUser | null>(() => {
+    const authUser = session?.user;
+    if (!authUser?.id) return null;
+    const name = authUser.name ?? null;
+    const parts = name?.trim().split(/\s+/) ?? [];
+    return {
+      id: authUser.id,
+      email: authUser.email ?? null,
+      name,
+      firstName: parts[0] || null,
+      lastName: parts.length > 1 ? parts.slice(1).join(' ') : null,
+      primaryEmailAddress: authUser.email ? { emailAddress: authUser.email } : null,
+    };
+  }, [session?.user]);
 
   const value: AuthContextType = {
     user,
     profile,
-    loading: !isLoaded || (!!clerkUser && profileLoading),
-    signOut: async () => { await clerkSignOut({ redirectUrl: '/' }); },
+    loading: status === 'loading' || (!!user && profileLoading),
+    signOut: async () => { await nextAuthSignOut({ callbackUrl: '/' }); },
     refreshProfile,
   };
 

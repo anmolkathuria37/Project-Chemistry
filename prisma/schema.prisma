@@ -1,6 +1,5 @@
-// Project Chemistry's target relational schema for the MySQL + Clerk migration.
-// Clerk owns credentials and sessions. The User.id value is the Clerk user ID.
-// Do not use a client-supplied user ID for authorization; derive it from the verified Clerk session.
+// Project Chemistry relational schema. Auth.js owns sign-in/session identity.
+// Never authorize from a client-supplied user ID; derive it from the verified session.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,9 +12,13 @@ datasource db {
 }
 
 model User {
-  // Stable identity supplied by Clerk (for example, user_...).
-  id                  String   @id @db.VarChar(191)
+  // Prisma generates stable IDs for new Auth.js users; existing profile IDs remain intact.
+  id                  String   @id @default(cuid()) @db.VarChar(191)
+  name                String?  @db.VarChar(191)
   email               String?  @unique @db.VarChar(191)
+  emailVerified       DateTime? @map("email_verified") @db.DateTime(3)
+  image               String?  @db.VarChar(1000)
+  passwordHash        String?  @map("password_hash") @db.VarChar(255)
   fullName            String?  @map("full_name") @db.VarChar(191)
   pronouns            String?  @db.VarChar(80)
   gender              String?  @db.VarChar(80)
@@ -33,6 +36,8 @@ model User {
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
+  accounts            Account[]
+  sessions            Session[]
   preferences         Preference?
   interests           UserInterest[]
   likesSent           Like[]   @relation("LikeSender")
@@ -51,6 +56,47 @@ model User {
   @@index([city, neighborhood])
   @@index([onboardingCompleted, profileCompletion])
   @@map("users")
+}
+
+
+model Account {
+  id                String  @id @default(cuid()) @db.VarChar(191)
+  userId            String  @map("user_id") @db.VarChar(191)
+  type              String  @db.VarChar(191)
+  provider          String  @db.VarChar(191)
+  providerAccountId String  @map("provider_account_id") @db.VarChar(191)
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String? @db.VarChar(191)
+  scope             String? @db.VarChar(191)
+  id_token          String? @db.Text
+  session_state     String? @db.VarChar(191)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid()) @db.VarChar(191)
+  sessionToken String   @unique @map("session_token") @db.VarChar(191)
+  userId       String   @map("user_id") @db.VarChar(191)
+  expires      DateTime @db.DateTime(3)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String   @db.VarChar(191)
+  token      String   @unique @db.VarChar(191)
+  expires    DateTime @db.DateTime(3)
+
+  @@unique([identifier, token])
+  @@map("auth_verification_tokens")
 }
 
 model Preference {

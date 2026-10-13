@@ -1,4 +1,5 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
@@ -7,12 +8,11 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 async function isAdmin() {
-  const { userId } = await auth();
-  if (!userId) return false;
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return false;
   const allowed = (process.env.ADMIN_EMAILS ?? '').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
   if (!allowed.length) return false;
-  const user = await currentUser();
-  const email = user?.emailAddresses.find((item) => item.id === user.primaryEmailAddressId)?.emailAddress.toLowerCase();
+  const email = session.user.email?.trim().toLowerCase();
   return Boolean(email && allowed.includes(email));
 }
 

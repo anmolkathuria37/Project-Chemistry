@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState } from 'react';
 import { Coffee, Film, Music, Utensils, Palette, Gamepad2, Mountain, Sparkles, MapPin, Search, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -104,7 +106,7 @@ export default function ExperiencesPage() {
           {filtered.map((venue) => (
             <div key={venue.name} className="bg-card rounded-2xl overflow-hidden border border-border/50 shadow-soft hover:shadow-card transition-all group">
               <div className="relative aspect-[4/3] overflow-hidden">
-                <img src={venue.image} alt={venue.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <Image width={1200} height={800} unoptimized src={venue.image} alt={venue.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <button
                   onClick={() => toggleFav(venue.name)}
                   className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center transition-colors"

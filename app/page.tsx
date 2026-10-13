@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -68,7 +70,7 @@ export default function LandingPage() {
                 Dating should lead <span className="text-primary italic">somewhere.</span>
               </h1>
               <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-lg">
-                Meet people who get you. Discover experiences you'll love. Turn a match into a real-world memory.
+                Meet people who get you. Discover experiences you&apos;ll love. Turn a match into a real-world memory.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Button asChild size="lg" className="rounded-full text-base h-12 px-8 bg-burgundy-gradient hover:opacity-90">
@@ -97,18 +99,18 @@ export default function LandingPage() {
               <div className="relative grid grid-cols-2 gap-4">
                 <div className="space-y-4 pt-8">
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[3/4]">
-                    <img src="https://images.pexels.com/photos/9608431/pexels-photo-9608431.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at dinner" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/9608431/pexels-photo-9608431.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at dinner" className="w-full h-full object-cover" />
                   </div>
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[4/3]">
-                    <img src="https://images.pexels.com/photos/2513611/pexels-photo-2513611.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Live music event" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/2513611/pexels-photo-2513611.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Live music event" className="w-full h-full object-cover" />
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[4/3]">
-                    <img src="https://images.pexels.com/photos/4255394/pexels-photo-4255394.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at cafe" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/4255394/pexels-photo-4255394.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Couple at cafe" className="w-full h-full object-cover" />
                   </div>
                   <div className="rounded-2xl overflow-hidden shadow-card aspect-[3/4]">
-                    <img src="https://images.pexels.com/photos/36534064/pexels-photo-36534064.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Fashion inspiration" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/36534064/pexels-photo-36534064.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Fashion inspiration" className="w-full h-full object-cover" />
                   </div>
                 </div>
               </div>
@@ -137,7 +139,7 @@ export default function LandingPage() {
               From a match to a memory
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Every great relationship starts with a great date. We're built for the whole journey.
+              Every great relationship starts with a great date. We&apos;re built for the whole journey.
             </p>
           </div>
           <div className="grid md:grid-cols-3 lg:grid-cols-7 gap-4">
@@ -205,7 +207,7 @@ export default function LandingPage() {
               <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl p-8 border border-border/50">
                 <div className="bg-card rounded-2xl shadow-card overflow-hidden border border-border/50">
                   <div className="relative h-80">
-                    <img src="https://images.pexels.com/photos/5910783/pexels-photo-5910783.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Profile preview" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src="https://images.pexels.com/photos/5910783/pexels-photo-5910783.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="Profile preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 text-white">
                       <p className="font-display text-2xl font-bold">Ananya, 26</p>
@@ -241,7 +243,7 @@ export default function LandingPage() {
           <div className="text-center max-w-2xl mx-auto mb-12">
             <p className="text-primary font-medium text-sm uppercase tracking-wider mb-3">Experiences</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground text-balance">
-              Plan dates you'll actually want to go on
+              Plan dates you&apos;ll actually want to go on
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -253,7 +255,7 @@ export default function LandingPage() {
             ].map((exp) => (
               <div key={exp.title} className="group cursor-pointer">
                 <div className="rounded-2xl overflow-hidden shadow-card aspect-[4/5] mb-4 relative">
-                  <img src={exp.img} alt={exp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <Image width={1200} height={800} unoptimized src={exp.img} alt={exp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/90 backdrop-blur flex items-center justify-center">
                     <exp.icon className="w-5 h-5 text-primary" />
@@ -292,7 +294,7 @@ export default function LandingPage() {
             <div className="order-1 lg:order-2">
               <p className="text-primary font-medium text-sm uppercase tracking-wider mb-3">Trust & Safety</p>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground text-balance">
-                Safety is not a feature. It's the foundation.
+                Safety is not a feature. It&apos;s the foundation.
               </h2>
               <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
                 Every profile is age-verified. Every photo is moderated. Every user controls their privacy. We provide tools to block, report, and stay safe — because trust is everything.
@@ -345,7 +347,7 @@ export default function LandingPage() {
             Your next great date starts here.
           </h2>
           <p className="mt-6 text-muted-foreground text-lg">
-            Join Chemistry today. Meet someone who gets you, plan a date you'll both love, and see where it goes.
+            Join Chemistry today. Meet someone who gets you, plan a date you&apos;ll both love, and see where it goes.
           </p>
           <Button asChild size="lg" className="mt-8 rounded-full text-base h-14 px-10 bg-burgundy-gradient hover:opacity-90">
             <Link href={cta.href}>{cta.label}</Link>

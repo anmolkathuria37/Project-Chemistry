@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -226,7 +228,7 @@ export default function ChatPage() {
             <ArrowLeft className="w-5 h-5 text-muted-foreground" />
           </Link>
           {otherProfile.photos?.[0] ? (
-            <img src={otherProfile.photos[0]} alt={otherProfile.full_name} className="w-10 h-10 rounded-full object-cover" />
+            <Image width={1200} height={800} unoptimized src={otherProfile.photos[0]} alt={otherProfile.full_name} className="w-10 h-10 rounded-full object-cover" />
           ) : (
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
               <Shield className="w-4 h-4 text-muted-foreground/30" />
@@ -330,7 +332,7 @@ export default function ChatPage() {
           <DialogHeader>
             <DialogTitle>Block {otherProfile.full_name}?</DialogTitle>
             <DialogDescription>
-              They won't be able to see your profile or send you messages. This action cannot be undone.
+              They won&apos;t be able to see your profile or send you messages. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

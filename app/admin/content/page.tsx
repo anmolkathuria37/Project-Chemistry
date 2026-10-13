@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Pencil, Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
@@ -224,7 +226,7 @@ export default function AdminContentPage() {
             : items.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">No content records yet. Create your first item above.</div>
             : <div className="grid gap-4 lg:grid-cols-2">
               {items.map((item) => <article key={item.id} className="overflow-hidden rounded-2xl border border-border bg-card">
-                {item.imageUrl && <div className="h-40 bg-muted"><img src={item.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" /></div>}
+                {item.imageUrl && <div className="h-40 bg-muted"><Image width={1200} height={800} unoptimized src={item.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" /></div>}
                 <div className="p-5">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="rounded-full bg-muted px-2.5 py-1">{sectionLabels[item.section]}</span>

@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Calendar, Coffee, Utensils, Film, Music, MapPin, DollarSign, Sparkles, Heart, ArrowRight, Clock, BookmarkCheck, ClipboardCopy, Trash2, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -321,7 +323,7 @@ export default function PlannerPage() {
               <article key={idea.id} className="bg-card rounded-2xl overflow-hidden border border-border/50 shadow-soft hover:shadow-card transition-all">
                 <div className="grid sm:grid-cols-3 gap-0">
                   <div className="aspect-[16/10] sm:aspect-auto relative overflow-hidden bg-muted">
-                    <img src={idea.image} alt={idea.title} loading="lazy" className="w-full h-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src={idea.image} alt={idea.title} loading="lazy" className="w-full h-full object-cover" />
                   </div>
                   <div className="sm:col-span-2 p-5 sm:p-6 flex flex-col">
                     <div className="flex-1">
@@ -372,7 +374,7 @@ export default function PlannerPage() {
           <div className="grid sm:grid-cols-2 gap-4">
             {savedPlans.map((plan) => (
               <article key={plan.id} className="flex gap-3 rounded-2xl border border-border/60 bg-card p-3">
-                <img src={plan.image_url} alt="" loading="lazy" className="w-24 h-24 rounded-xl object-cover bg-muted" />
+                <Image width={1200} height={800} unoptimized src={plan.image_url} alt="" loading="lazy" className="w-24 h-24 rounded-xl object-cover bg-muted" />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-sm text-foreground">{plan.title}</p>
                   <p className="text-xs text-muted-foreground mt-1">{plan.neighborhood} · {plan.budget_label}</p>

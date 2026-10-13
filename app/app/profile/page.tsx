@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase-client';
@@ -174,7 +176,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-3 gap-3">
               {photos.map((url, i) => (
                 <div key={url} className="relative group aspect-square rounded-xl overflow-hidden border border-border">
-                  <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                  <Image width={1200} height={800} unoptimized src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
                   {i === 0 && (
                     <div className="absolute bottom-0 left-0 right-0 bg-primary/90 text-white text-xs py-1 text-center font-medium">Main</div>
                   )}
@@ -194,7 +196,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-3 gap-3">
             {photos.length > 0 ? photos.map((url, i) => (
               <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border">
-                <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                <Image width={1200} height={800} unoptimized src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
               </div>
             )) : (
               <p className="text-sm text-muted-foreground col-span-3">No photos yet.</p>

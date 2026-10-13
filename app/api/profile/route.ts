@@ -1,4 +1,5 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -27,10 +28,9 @@ function serializeProfile(user: any) {
   };
 }
 
-async function ensureUser(userId: string) {
-  const clerkUser = await currentUser();
-  const email = clerkUser?.emailAddresses?.find((item) => item.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? null;
-  const fullName = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(' ') || null;
+async function ensureUser(userId: string, authUser?: { email?: string | null; name?: string | null }) {
+  const email = authUser?.email ?? null;
+  const fullName = authUser?.name ?? null;
   return prisma.user.upsert({
     where: { id: userId },
     update: { ...(email ? { email } : {}), ...(fullName ? { fullName } : {}) },
@@ -39,10 +39,11 @@ async function ensureUser(userId: string) {
 }
 
 export async function GET() {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const user = await ensureUser(userId);
+    const user = await ensureUser(userId, session?.user);
     return NextResponse.json({ data: serializeProfile(user), error: null });
   } catch (error) {
     console.error('Profile GET failed:', error);
@@ -66,7 +67,8 @@ const fieldMap: Record<string, string> = {
 };
 
 export async function PATCH(request: Request) {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await request.json();
@@ -94,7 +96,22 @@ export async function PATCH(request: Request) {
         data[target] = value;
       }
     }
-    const existing = await ensureUser(userId);
+    const existing = await ensureUser(userId, session?.user);
+    if (data.onboardingCompleted === true) {
+      const dob = Object.prototype.hasOwnProperty.call(data, 'dateOfBirth')
+        ? data.dateOfBirth
+        : existing.dateOfBirth;
+      if (!(dob instanceof Date) || Number.isNaN(dob.getTime())) {
+        return NextResponse.json({ error: 'Enter your date of birth before completing onboarding.' }, { status: 400 });
+      }
+      let age = new Date().getFullYear() - dob.getFullYear();
+      const today = new Date();
+      const monthDelta = today.getMonth() - dob.getMonth();
+      if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
+      if (age < 18 || age > 100 || dob > today) {
+        return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
+      }
+    }
     const updated = await prisma.user.update({ where: { id: userId }, data });
     return NextResponse.json({ data: serializeProfile(updated), error: null });
   } catch (error) {

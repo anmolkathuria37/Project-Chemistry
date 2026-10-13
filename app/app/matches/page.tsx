@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
@@ -147,7 +149,7 @@ export default function MatchesPage() {
                   >
                     <div className="relative aspect-square rounded-2xl overflow-hidden shadow-card border border-border/50">
                       {m.other_profile.photos?.[0] ? (
-                        <img src={m.other_profile.photos[0]} alt={m.other_profile.full_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <Image width={1200} height={800} unoptimized src={m.other_profile.photos[0]} alt={m.other_profile.full_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="w-full h-full bg-secondary flex items-center justify-center">
                           <Heart className="w-8 h-8 text-muted-foreground/30" />
@@ -181,7 +183,7 @@ export default function MatchesPage() {
                     className="flex items-center gap-3 bg-card rounded-2xl p-3 border border-border/50 hover:border-primary/30 hover:shadow-card transition-all"
                   >
                     {m.other_profile.photos?.[0] ? (
-                      <img src={m.other_profile.photos[0]} alt={m.other_profile.full_name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                      <Image width={1200} height={800} unoptimized src={m.other_profile.photos[0]} alt={m.other_profile.full_name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
                         <Heart className="w-5 h-5 text-muted-foreground/30" />

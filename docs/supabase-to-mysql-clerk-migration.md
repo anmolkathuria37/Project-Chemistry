@@ -1,18 +1,17 @@
-# Clerk + MySQL migration
+# Auth.js + Google OAuth + MySQL migration
 
 ## Current implementation
 
-The app's authentication provider is Clerk. The application database is MySQL, accessed through Prisma on the server. The old browser-side Supabase SDK has been removed from dependencies; `lib/supabase-client.ts` is a temporary compatibility adapter that sends existing screen queries to the authenticated `/api/data` route.
+Project Chemistry uses Auth.js (NextAuth.js v4) with Google OAuth and email/password credentials. Prisma stores user identity, OAuth account links, and dating-profile data in MySQL. Passwords are hashed with bcrypt before they are stored. JWT sessions are verified server-side by protected-page middleware and API route handlers.
 
-### Added in this implementation
+### Included in this migration
 
-- Clerk provider, sign-in/sign-up pages, and middleware for protected routes.
-- Prisma singleton and committed MySQL schema/migration.
-- `GET/PATCH /api/profile` to sync the signed-in Clerk user and read/update their own profile.
-- `POST /api/data` adapter for the existing profile, preference, interest, discovery, likes/passes, matches, messaging, safety, and saved-date-plan screens.
-- Server-side ownership checks, mutual-like checks for match creation, and block checks for likes and messages.
-- Adult age validation on both signup flow and server profile writes; other users' exact birth dates are not returned to clients.
-- CI workflow for Prisma validation/generation, TypeScript checks, and a production build.
+- Google sign-in using the standard Auth.js Google provider.
+- Email/password registration and sign-in with server-side adult-age validation and bcrypt password hashes.
+- Prisma models and MySQL migration for Auth.js user fields, OAuth accounts, sessions, and verification tokens.
+- A shared Auth.js configuration and typed session user ID.
+- Server-side session checks for profile, data, uploads, and admin APIs.
+- Existing profile, preference, discovery, match, messaging, safety, and saved-date-plan data models retained.
 
 ## Environment
 
@@ -20,11 +19,14 @@ Copy `.env.example` to `.env.local` and configure:
 
 - `DATABASE_URL`
 - `SHADOW_DATABASE_URL`
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
 - `NEXT_PUBLIC_APP_URL`
+- `ADMIN_EMAILS`
 
-Never commit real credentials. Use separate least-privilege credentials for development and production. Production MySQL should have TLS, backups, and monitoring.
+For Google OAuth, reuse the Google OAuth client ID already used by Smokey Tales (it is prefilled in `.env.example`). In Google Cloud Console, retrieve its client secret and add `http://localhost:3000/api/auth/callback/google` plus `https://YOUR_DOMAIN/api/auth/callback/google` to its authorized redirect URIs. Keep the client secret in `.env.local`/Vercel environment variables only; never commit it.
 
 ## Local verification
 
@@ -38,11 +40,13 @@ npm run build
 npm run dev
 ```
 
-A successful build proves compilation, not live integration. After configuring real Clerk keys and a reachable MySQL database, manually test account creation/sign-in, age gate, onboarding, discovery, reciprocal likes, matches, conversation access, messages, profile and preference edits, block/report actions, and saved date plans.
+A successful build proves compilation, not live provider/database integration. Test Google sign-in, email registration, wrong-password rejection, the 18+ server-side age gate, onboarding, discovery, reciprocal likes, matches, conversation access, messages, profile and preference edits, block/report actions, saved date plans, and admin allowlist checks against a disposable MySQL database.
 
-## Important limitations before production launch
+## Production checklist
 
-- This GitHub-only workflow cannot configure the user's Clerk dashboard, production MySQL service, domain, or hosting secrets.
-- The API adapter preserves the current screen query style during migration. Before handling real users, review authorization and query coverage feature-by-feature and add request rate limiting, abuse monitoring, account deletion/user lifecycle handling, and integration tests against a disposable MySQL database.
+- Configure Google OAuth redirect URIs and production environment variables.
+- Use a managed MySQL database with TLS, backups, and least-privilege credentials.
+- Run the committed Prisma migrations before serving traffic.
+- Verify authentication and authorization end-to-end before merging/deploying.
+- Before real users, add email verification/password reset, rate limiting, abuse monitoring, account deletion/lifecycle handling, and automated integration tests.
 - Date suggestions are curated ideas, not live venue availability or confirmed reservations.
-- Do not merge/deploy until the latest validation workflow is green and a real environment smoke test passes.

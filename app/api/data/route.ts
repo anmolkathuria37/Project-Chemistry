@@ -1,4 +1,5 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -85,9 +86,21 @@ function buildWhere(table: string, filters: any[] = []) {
       continue;
     }
     const key = field(table, item.column);
-    const value = item.operator === 'in' || item.operator === 'not_in'
+    const rawValue = item.operator === 'in' || item.operator === 'not_in'
       ? parseInValue(item.value)
-      : item.operator === 'not_is' ? item.value : item.value;
+      : item.value;
+    // Prisma DateTime filters must receive Date objects, not date-only strings.
+    // The legacy client sends DOB range filters as YYYY-MM-DD.
+    const isDateOfBirth = (table === 'users' || table === 'profiles') && key === 'dateOfBirth';
+    const asDate = (value: any) => {
+      if (typeof value !== 'string') return value;
+      const normalized = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00.000Z` : value;
+      const parsed = new Date(normalized);
+      return Number.isNaN(parsed.getTime()) ? value : parsed;
+    };
+    const value = isDateOfBirth
+      ? (Array.isArray(rawValue) ? rawValue.map(asDate) : asDate(rawValue))
+      : rawValue;
     let condition: any;
     switch (item.operator) {
       case 'eq': condition = value; break;
@@ -127,9 +140,15 @@ function ownerScope(table: string, userId: string, action: string) {
 function sanitize(table: string, rows: any, userId: string) {
   const map = (row: any) => {
     const result = fromDb(table, row);
-    if ((table === 'profiles' || table === 'users') && row?.id !== userId) {
-      delete result.email;
-      if (row.dateOfBirth) {
+    if (table === 'profiles' || table === 'users') {
+      // Auth.js credential and token metadata must never be exposed by the legacy data adapter.
+      delete result.password_hash;
+      delete result.email_verified;
+      delete result.image;
+      if (row?.id !== userId) {
+        delete result.email;
+      }
+      if (row?.id !== userId && row.dateOfBirth) {
         const dob = new Date(row.dateOfBirth);
         const today = new Date();
         let age = today.getFullYear() - dob.getFullYear();
@@ -138,7 +157,7 @@ function sanitize(table: string, rows: any, userId: string) {
         const ageOnlyDate = new Date();
         ageOnlyDate.setFullYear(ageOnlyDate.getFullYear() - age);
         result.date_of_birth = ageOnlyDate.toISOString().slice(0, 10);
-      } else {
+      } else if (row?.id !== userId) {
         result.date_of_birth = null;
       }
     }
@@ -162,10 +181,9 @@ async function ensureInterestCatalog() {
   await prisma.interest.createMany({ data: seed, skipDuplicates: true });
 }
 
-async function ensureUser(userId: string) {
-  const clerkUser = await currentUser();
-  const email = clerkUser?.emailAddresses?.find((item) => item.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? null;
-  const fullName = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(' ') || null;
+async function ensureUser(userId: string, authUser?: { email?: string | null; name?: string | null }) {
+  const email = authUser?.email ?? null;
+  const fullName = authUser?.name ?? null;
   await prisma.user.upsert({
     where: { id: userId },
     update: { ...(email ? { email } : {}), ...(fullName ? { fullName } : {}) },
@@ -174,7 +192,8 @@ async function ensureUser(userId: string) {
 }
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: 'Please sign in first.' }, { status: 401 });
   try {
     const input = await request.json();
@@ -184,7 +203,7 @@ export async function POST(request: Request) {
     const action = String(input.action ?? 'select');
     const scope = ownerScope(table, userId, action);
     if (scope === null) return NextResponse.json({ error: 'Operation not allowed.' }, { status: 403 });
-    await ensureUser(userId);
+    await ensureUser(userId, session?.user);
     if (table === 'interests' && action === 'select') await ensureInterestCatalog();
 
     if (table === 'interests' && action !== 'select') return NextResponse.json({ error: 'Interest catalog is read-only.' }, { status: 403 });
@@ -216,7 +235,13 @@ export async function POST(request: Request) {
       const rows = raw.map((item: any) => toDb(table, item));
       if (table === 'profiles' || table === 'users') {
         if (rows.some((row: any) => row.id && row.id !== userId)) return NextResponse.json({ error: 'Cannot create another user profile.' }, { status: 403 });
-        rows.forEach((row: any) => row.id = userId);
+        rows.forEach((row: any) => {
+          row.id = userId;
+          // These fields are managed only by Auth.js/server-side account flows.
+          for (const key of ['email', 'name', 'passwordHash', 'emailVerified', 'image', 'isVerified', 'verificationBadges', 'onboardingCompleted', 'createdAt', 'updatedAt']) {
+            delete row[key];
+          }
+        });
       }
       const ownerFields: Record<string, string> = { preferences: 'userId', saved_date_plans: 'userId', user_interests: 'userId', likes: 'likerId', passes: 'passerId', blocks: 'blockerId', reports: 'reporterId', messages: 'senderId' };
       const ownerField = ownerFields[table];
@@ -282,6 +307,10 @@ export async function POST(request: Request) {
       if (table === 'profiles' || table === 'users') {
         delete data.id;
         delete data.email;
+        delete data.name;
+        delete data.passwordHash;
+        delete data.emailVerified;
+        delete data.image;
         delete data.isVerified;
         delete data.verificationBadges;
         delete data.createdAt;
@@ -293,6 +322,20 @@ export async function POST(request: Request) {
           const monthDelta = today.getMonth() - dob.getMonth();
           if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
           if (Number.isNaN(dob.getTime()) || dob > today || age < 18 || age > 100) {
+            return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
+          }
+        }
+        if (data.onboardingCompleted === true) {
+          const existingUser = await prisma.user.findUnique({ where: { id: userId }, select: { dateOfBirth: true } });
+          const dob = data.dateOfBirth !== undefined ? data.dateOfBirth : existingUser?.dateOfBirth;
+          if (!(dob instanceof Date) || Number.isNaN(dob.getTime())) {
+            return NextResponse.json({ error: 'Enter your date of birth before completing onboarding.' }, { status: 400 });
+          }
+          let age = new Date().getFullYear() - dob.getFullYear();
+          const today = new Date();
+          const monthDelta = today.getMonth() - dob.getMonth();
+          if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < dob.getDate())) age--;
+          if (age < 18 || age > 100 || dob > today) {
             return NextResponse.json({ error: 'Chemistry is only available to people aged 18 to 100.' }, { status: 400 });
           }
         }

@@ -7,6 +7,7 @@ on:
     branches:
       - main
       - feat/mysql-clerk-migration-foundation
+      - feat/authjs-migration
 
 permissions:
   contents: read
@@ -17,8 +18,10 @@ jobs:
     env:
       DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry
       SHADOW_DATABASE_URL: mysql://chemistry_app:placeholder@127.0.0.1:3306/project_chemistry_shadow
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dGVzdC5jbGVyay5hY2NvdW50cy5jb20k
-      CLERK_SECRET_KEY: sk_test_placeholder
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ci-placeholder-secret-for-build-validation-only
+      GOOGLE_CLIENT_ID: test-google-client-id.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: test-google-client-secret
       NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4

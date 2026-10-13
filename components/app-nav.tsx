@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
@@ -75,7 +77,7 @@ export function AppNav() {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors">
                   {profile?.photos?.[0] ? (
-                    <img src={profile.photos[0]} alt="You" className="w-9 h-9 rounded-full object-cover" />
+                    <Image width={1200} height={800} unoptimized src={profile.photos[0]} alt="You" className="w-9 h-9 rounded-full object-cover" />
                   ) : (
                     <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center">
                       <User className="w-4 h-4 text-muted-foreground" />
